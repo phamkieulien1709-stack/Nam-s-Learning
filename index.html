@@ -115,6 +115,8 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
 .tag-red { background:rgba(255,80,80,.2); color:#ff9090; border:1px solid rgba(255,80,80,.3); }
 .btn-del { background:none; border:none; color:#ff7070; font-size:18px; cursor:pointer; padding:0 4px; flex-shrink:0; }
 .btn-del:hover { color:#ff3030; }
+.btn-edit { background:none; border:none; color:#ffd84d; font-size:16px; cursor:pointer; padding:0 4px; flex-shrink:0; }
+.btn-edit:hover { color:#fff; }
 .sec-label { font-size:12px; font-weight:700; color:#ffd84d88; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; margin-top:4px; }
 .divider { border:none; border-top:1px solid rgba(255,220,80,.18); margin:14px 0; }
 
@@ -203,6 +205,19 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
 .nv-check-5 { top:83.9%;  }  /* 70 + 9.5/2 */
 .nv-check.checked { background:#a855f7; border-color:#6b21c8; color:#fff; box-shadow:0 0 10px rgba(168,85,247,.6); }
 
+/* ── MÀN HÌNH THÚ CƯNG ── */
+.tc-screen {
+  display:none; position:fixed; inset:0;
+  z-index:100; background:#000;
+  overflow:hidden; pointer-events:none;
+}
+.tc-screen.active { display:block; pointer-events:auto; }
+.tc-bg { width:100%; height:100%; object-fit:cover; display:block; }
+.tc-back {
+  position:absolute; top:3%; left:1.5%; width:7%; height:12%;
+  background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:20;
+}
+
 /* ── MÀN HÌNH CỬA HÀNG ── */
 .ch-screen {
   display:none; position:fixed; inset:0;
@@ -276,7 +291,7 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
   <!-- Thú cưng: left:11.1% top:68% -->
   <button class="hotspot" data-label="🐾 Thú cưng"
     style="left:13%;top:70%;width:17%;height:9%;"
-    onclick="notify('🐾 Thú cưng')"></button>
+    onclick="openThuCungScreen()"></button>
 
   <!-- Kho báu: left:34.7% top:72.3% -->
   <button class="hotspot" data-label="💎 Kho báu"
@@ -357,6 +372,12 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
   </div>
 </div>
 
+<!-- ── THÚ CƯNG SCREEN ── -->
+<div class="tc-screen" id="tcScreen">
+  <img class="tc-bg" src="thu_cung_bg.png" alt="Thú cưng" draggable="false">
+  <button class="tc-back" onclick="closeThuCungScreen()"></button>
+</div>
+
 <!-- ── MẬT KHẨU ── -->
 <div class="overlay" id="pwOverlay">
   <div class="modal" id="pwModal" style="max-width:340px;">
@@ -383,6 +404,7 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
       <button class="tab-btn" onclick="switchTab('kho-bau')">💎 Kho báu</button>
       <button class="tab-btn" onclick="switchTab('cua-hang')">🏪 Cửa hàng</button>
       <button class="tab-btn" onclick="switchTab('tin-nhan')">✉️ Tin nhắn</button>
+      <button class="tab-btn" onclick="switchTab('doi-matkhau')">🔑 Mật khẩu</button>
     </div>
 
     <!-- NHIỆM VỤ -->
@@ -513,6 +535,37 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
       <div class="sec-label">Hộp thư đã gửi</div>
       <div class="item-list" id="tn-list"></div>
     </div>
+    <!-- ĐỔI MẬT KHẨU -->
+    <div class="tab-panel" id="tab-doi-matkhau">
+      <div class="sec-label">Đổi mật khẩu quản trị</div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:13px;color:#bbb;margin-bottom:8px;">Mật khẩu hiện tại</div>
+        <div class="field-row"><input type="password" id="pw-current" placeholder="Nhập mật khẩu hiện tại…" maxlength="30"></div>
+      </div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:13px;color:#bbb;margin-bottom:8px;">Mật khẩu mới</div>
+        <div class="field-row"><input type="password" id="pw-new" placeholder="Nhập mật khẩu mới…" maxlength="30"></div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px;color:#bbb;margin-bottom:8px;">Xác nhận mật khẩu mới</div>
+        <div class="field-row"><input type="password" id="pw-confirm" placeholder="Nhập lại mật khẩu mới…" maxlength="30"></div>
+      </div>
+      <div class="pw-err" id="pw-change-err" style="margin-bottom:10px;"></div>
+      <button class="btn-primary" onclick="changePassword()">🔑 Đổi mật khẩu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDIT MODAL ── -->
+<div class="overlay" id="editOverlay" style="z-index:600;">
+  <div class="modal" style="max-width:480px;" id="editModal">
+    <div class="modal-title" id="editModalTitle">✏️ Chỉnh sửa</div>
+    <button class="modal-close" onclick="closeEdit()">✕</button>
+    <div id="editModalBody"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn-primary" style="background:linear-gradient(90deg,#3cb96a,#27ae60);" onclick="closeEdit()">❌ Hủy</button>
+      <button class="btn-primary" id="editSaveBtn" onclick="saveEdit()">💾 Lưu</button>
+    </div>
   </div>
 </div>
 
@@ -522,7 +575,9 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
 // ══════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════
-const ADMIN_PW = '1234'; // ← đổi mật khẩu tại đây
+const ADMIN_PW_DEFAULT = '1234'; // ← mật khẩu mặc định
+let ADMIN_PW_VAR = localStorage.getItem('lh_admin_pw') || ADMIN_PW_DEFAULT;
+Object.defineProperty(window,'ADMIN_PW',{get:()=>ADMIN_PW_VAR});
 
 // ══════════════════════════════════════════════
 // STORAGE
@@ -577,7 +632,7 @@ function checkPassword() {
 }
 
 function switchTab(id) {
-  const ids=['nhiem-vu','thu-vien','thu-cung','kho-bau','cua-hang','tin-nhan'];
+  const ids=['nhiem-vu','thu-vien','thu-cung','kho-bau','cua-hang','tin-nhan','doi-matkhau'];
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===id));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+id));
 }
@@ -609,7 +664,10 @@ function renderNhiemVu() {
         <span class="item-tag ${cc[x.cat]||'tag-gold'}">${x.cat}</span>
         ${x.done?'<span style="color:#7deda0;font-size:12px;margin-left:6px;">✓ Hoàn thành</span>':''}
       </div>
-      <button class="btn-del" onclick="delNhiemVu(${x.id})">🗑</button>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="btn-edit" onclick="openEdit('nhiem_vu',${x.id})">✏️</button>
+        <button class="btn-del" onclick="delNhiemVu(${x.id})">🗑</button>
+      </div>
     </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có nhiệm vụ nào</div>';
 }
 
@@ -639,7 +697,10 @@ function renderThuVien() {
         <span class="item-tag ${sc[x.sub]||'tag-blue'}">${x.sub}</span>
         <span style="font-size:11px;color:#888;margin-left:6px;">${x.date}</span>
       </div>
-      <button class="btn-del" onclick="delThuVien(${x.id})">🗑</button>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="btn-edit" onclick="openEdit('thu_vien',${x.id})">✏️</button>
+        <button class="btn-del" onclick="delThuVien(${x.id})">🗑</button>
+      </div>
     </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Kho kiến thức đang trống</div>';
 }
 
@@ -668,7 +729,10 @@ function renderThuCung() {
         <div class="item-sub">${x.date?fmtDate(x.date):''}${x.date&&x.time?' – ':''}${x.time||''}</div>
         <span class="item-tag ${tc[x.type]||'tag-blue'}">${x.type}</span>
       </div>
-      <button class="btn-del" onclick="delThuCung(${x.id})">🗑</button>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="btn-edit" onclick="openEdit('thu_cung',${x.id})">✏️</button>
+        <button class="btn-del" onclick="delThuCung(${x.id})">🗑</button>
+      </div>
     </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có lịch chăm sóc</div>';
 }
 
@@ -732,7 +796,10 @@ function renderCuaHang() {
         <div class="item-sub">💎 ${x.price.toLocaleString('vi-VN')} · SL: ${x.qty}</div>
         <span class="item-tag ${cc[x.cat]||'tag-gold'}">${x.cat}</span>
       </div>
-      <button class="btn-del" onclick="delCuaHang(${x.id})">🗑</button>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="btn-edit" onclick="openEdit('cua_hang',${x.id})">✏️</button>
+        <button class="btn-del" onclick="delCuaHang(${x.id})">🗑</button>
+      </div>
     </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Cửa hàng đang trống</div>';
 }
 
@@ -757,9 +824,173 @@ function renderTinNhan() {
       <div class="msg-time">${x.emoji} ${x.date}</div>
       <div class="msg-text">${esc(x.text)}</div>
       <div style="text-align:right;margin-top:6px;">
+        <button class="btn-edit" onclick="openEdit('tin_nhan',${x.id})" style="font-size:14px;margin-right:6px;">✏️ Sửa</button>
         <button class="btn-del" onclick="delTinNhan(${x.id})" style="font-size:14px;">🗑 Xóa</button>
       </div>
     </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có tin nhắn nào</div>';
+}
+
+// ══════════════════════════════════════════════
+// THÚ CƯNG SCREEN
+// ══════════════════════════════════════════════
+function openThuCungScreen() {
+  document.getElementById('tcScreen').classList.add('active');
+}
+function closeThuCungScreen() {
+  document.getElementById('tcScreen').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════
+// ĐỔI MẬT KHẨU
+// ══════════════════════════════════════════════
+function changePassword() {
+  const cur = document.getElementById('pw-current').value;
+  const nw  = document.getElementById('pw-new').value.trim();
+  const cf  = document.getElementById('pw-confirm').value.trim();
+  const err = document.getElementById('pw-change-err');
+  if (cur !== ADMIN_PW) { err.textContent='❌ Mật khẩu hiện tại không đúng!'; return; }
+  if (!nw) { err.textContent='❌ Mật khẩu mới không được để trống!'; return; }
+  if (nw !== cf) { err.textContent='❌ Mật khẩu xác nhận không khớp!'; return; }
+  ADMIN_PW_VAR = nw;
+  saveVal('admin_pw', nw);
+  err.style.color='#7deda0'; err.textContent='✅ Đổi mật khẩu thành công!';
+  document.getElementById('pw-current').value='';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-confirm').value='';
+  setTimeout(()=>{ err.textContent=''; err.style.color=''; }, 3000);
+}
+
+// ══════════════════════════════════════════════
+// EDIT (SỬA) SYSTEM
+// ══════════════════════════════════════════════
+let editCtx = null; // { type, id }
+
+function closeEdit() { document.getElementById('editOverlay').classList.remove('active'); editCtx=null; }
+
+function openEdit(type, id) {
+  const items = load(type==='tin_nhan'?'tin_nhan':type);
+  const x = items.find(i=>i.id===id);
+  if (!x) return;
+  editCtx = { type, id };
+  let title='', body='';
+
+  if (type==='nhiem_vu') {
+    title='✏️ Sửa nhiệm vụ';
+    body=`
+      <div class="sec-label">Tên nhiệm vụ</div>
+      <div class="field-row"><input type="text" id="e-title" value="${esc(x.title)}" maxlength="80"></div>
+      <div class="field-row">
+        <select id="e-cat">
+          ${['Học tập','Vận động','Sáng tạo','Gia đình','Khác'].map(c=>`<option value="${c}"${x.cat===c?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field-row">
+        <input type="number" id="e-reward" placeholder="Điểm thưởng 💎" value="${x.reward||0}" min="0" max="9999">
+        <input type="date" id="e-date" value="${x.date||''}">
+      </div>`;
+  } else if (type==='thu_vien') {
+    title='✏️ Sửa bài học';
+    body=`
+      <div class="sec-label">Tiêu đề</div>
+      <div class="field-row"><input type="text" id="e-title" value="${esc(x.title)}" maxlength="100"></div>
+      <div class="field-row">
+        <select id="e-sub">
+          ${['Toán','Tiếng Việt','Tiếng Anh','Khoa học','Nghệ thuật','Kỹ năng sống'].map(s=>`<option value="${s}"${x.sub===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field-row"><textarea id="e-content" style="min-height:80px;">${esc(x.content||'')}</textarea></div>`;
+  } else if (type==='thu_cung') {
+    title='✏️ Sửa lịch chăm sóc';
+    body=`
+      <div class="sec-label">Tên thú cưng</div>
+      <div class="field-row"><input type="text" id="e-pet" value="${esc(x.pet)}" maxlength="40"></div>
+      <div class="field-row">
+        <select id="e-type">
+          ${['Cho ăn','Tắm rửa','Thay đồ','Vui chơi','Khám bệnh'].map(t=>`<option value="${t}"${x.type===t?' selected':''}>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field-row">
+        <input type="time" id="e-time" value="${x.time||''}">
+        <input type="date" id="e-date" value="${x.date||''}">
+      </div>`;
+  } else if (type==='cua_hang') {
+    title='✏️ Sửa phần thưởng';
+    body=`
+      <div class="sec-label">Tên phần thưởng</div>
+      <div class="field-row"><input type="text" id="e-name" value="${esc(x.name)}" maxlength="80"></div>
+      <div class="field-row">
+        <input type="number" id="e-price" value="${x.price}" min="1" max="99999" placeholder="Giá 💎">
+        <input type="number" id="e-qty" value="${x.qty}" min="0" max="999" placeholder="Số lượng">
+      </div>
+      <div class="field-row">
+        <select id="e-cat">
+          ${['Đồ chơi','Hoạt động','Ăn uống','Sách','Khác'].map(c=>`<option value="${c}"${x.cat===c?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>`;
+  } else if (type==='tin_nhan') {
+    title='✏️ Sửa tin nhắn';
+    body=`
+      <div class="field-row">
+        <select id="e-emoji">
+          ${['💌','⭐','🎉','🔔','💪'].map(e=>`<option value="${e}"${x.emoji===e?' selected':''}>${e}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field-row"><textarea id="e-text" style="min-height:80px;">${esc(x.text)}</textarea></div>`;
+  }
+
+  document.getElementById('editModalTitle').textContent = title;
+  document.getElementById('editModalBody').innerHTML = body;
+  document.getElementById('editOverlay').classList.add('active');
+}
+
+function saveEdit() {
+  if (!editCtx) return;
+  const {type, id} = editCtx;
+  const items = load(type==='tin_nhan'?'tin_nhan':type);
+  const idx = items.findIndex(i=>i.id===id);
+  if (idx<0) return closeEdit();
+
+  if (type==='nhiem_vu') {
+    const t=document.getElementById('e-title').value.trim();
+    if(!t) return shake('e-title');
+    items[idx].title=t;
+    items[idx].cat=document.getElementById('e-cat').value;
+    items[idx].reward=parseInt(document.getElementById('e-reward').value)||0;
+    items[idx].date=document.getElementById('e-date').value;
+    save('nhiem_vu',items); renderNhiemVu();
+  } else if (type==='thu_vien') {
+    const t=document.getElementById('e-title').value.trim();
+    if(!t) return shake('e-title');
+    items[idx].title=t;
+    items[idx].sub=document.getElementById('e-sub').value;
+    items[idx].content=document.getElementById('e-content').value.trim();
+    save('thu_vien',items); renderThuVien();
+  } else if (type==='thu_cung') {
+    const p=document.getElementById('e-pet').value.trim();
+    if(!p) return shake('e-pet');
+    items[idx].pet=p;
+    items[idx].type=document.getElementById('e-type').value;
+    items[idx].time=document.getElementById('e-time').value;
+    items[idx].date=document.getElementById('e-date').value;
+    save('thu_cung',items); renderThuCung();
+  } else if (type==='cua_hang') {
+    const n=document.getElementById('e-name').value.trim();
+    if(!n) return shake('e-name');
+    const p=parseInt(document.getElementById('e-price').value);
+    if(!p||p<=0) return shake('e-price');
+    items[idx].name=n; items[idx].price=p;
+    items[idx].qty=parseInt(document.getElementById('e-qty').value)||0;
+    items[idx].cat=document.getElementById('e-cat').value;
+    save('cua_hang',items); renderCuaHang();
+  } else if (type==='tin_nhan') {
+    const t=document.getElementById('e-text').value.trim();
+    if(!t) return shake('e-text');
+    items[idx].text=t;
+    items[idx].emoji=document.getElementById('e-emoji').value;
+    save('tin_nhan',items); renderTinNhan();
+  }
+  notify('✅ Đã lưu thay đổi!');
+  closeEdit();
 }
 
 function renderAll() { renderNhiemVu(); renderThuVien(); renderThuCung(); renderKhoBau(); renderCuaHang(); renderTinNhan(); }
@@ -913,6 +1144,8 @@ function confirmExchange() {
 document.getElementById('pwOverlay').addEventListener('click',      e=>{ if(e.target===e.currentTarget) closePw(); });
 document.getElementById('adminOverlay').addEventListener('click',   e=>{ if(e.target===e.currentTarget) closeAdmin(); });
 document.getElementById('chConfirmOverlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeConfirm(); });
+document.getElementById('editOverlay').addEventListener('click',    e=>{ if(e.target===e.currentTarget) closeEdit(); });
+
 </script>
 </body>
 </html>
