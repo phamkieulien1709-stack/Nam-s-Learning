@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Hub của Bé Nấm</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:'Segoe UI',sans-serif; }
+
+/* ── MÀN HÌNH CHÍNH ── */
+.scene { position:fixed; inset:0; z-index:1; }
+.bg { width:100%; height:100%; object-fit:cover; display:block; user-select:none; -webkit-user-drag:none; }
+
+.hotspot {
+  position:absolute; background:transparent; border:none;
+  cursor:pointer; border-radius:50px;
+  transition:background .2s, box-shadow .2s; z-index:10;
+}
+.hotspot:hover { background:rgba(255,255,255,.18); box-shadow:0 0 0 3px rgba(255,220,80,.8),0 0 24px rgba(255,220,80,.45); }
+.hotspot:active { background:rgba(255,255,255,.3); transform:scale(.97); }
+.hotspot::after {
+  content:attr(data-label); position:absolute;
+  bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  background:rgba(70,20,120,.93); color:#fff;
+  font-size:13px; font-weight:700; padding:5px 14px;
+  border-radius:20px; white-space:nowrap; pointer-events:none;
+  opacity:0; transition:opacity .18s;
+  box-shadow:0 2px 8px rgba(0,0,0,.45); border:2px solid rgba(255,220,80,.75);
+}
+.hotspot:hover::after { opacity:1; }
+
+/* ── TOAST ── */
+#toast {
+  position:fixed; bottom:40px; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(70,20,120,.95); color:#fff;
+  font-size:16px; font-weight:700; padding:12px 30px; border-radius:30px;
+  border:2px solid rgba(255,220,80,.85); box-shadow:0 4px 20px rgba(0,0,0,.5);
+  opacity:0; transition:opacity .3s,transform .3s; z-index:9999; pointer-events:none;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── OVERLAY / MODAL ── */
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(10,0,30,.75); backdrop-filter:blur(4px);
+  z-index:500; align-items:center; justify-content:center;
+}
+.overlay.active { display:flex; }
+.modal {
+  background:linear-gradient(135deg,#1a0640,#2d0d6e);
+  border:2px solid rgba(255,220,80,.7); border-radius:20px;
+  padding:28px 32px; width:90%; max-width:520px; max-height:88vh;
+  overflow-y:auto; position:relative; box-shadow:0 8px 40px rgba(0,0,0,.7); color:#fff;
+}
+.modal-title { font-size:20px; font-weight:800; color:#ffd84d; margin-bottom:18px; text-align:center; }
+.modal-close { position:absolute; top:14px; right:18px; background:none; border:none; color:#ffd84d; font-size:22px; cursor:pointer; }
+.modal-close:hover { color:#fff; }
+
+/* ── PASSWORD ── */
+#pwModal input[type=password] {
+  width:100%; padding:12px 16px; border-radius:12px;
+  border:2px solid rgba(255,220,80,.6); background:rgba(255,255,255,.08);
+  color:#fff; font-size:18px; text-align:center; letter-spacing:6px; outline:none; margin-bottom:14px;
+}
+#pwModal input:focus { border-color:#ffd84d; }
+.pw-err { color:#ff6b6b; font-size:13px; text-align:center; margin-top:-8px; margin-bottom:10px; min-height:18px; }
+.btn-primary {
+  width:100%; padding:12px; border-radius:12px;
+  background:linear-gradient(90deg,#7b2ff7,#e040fb);
+  border:none; color:#fff; font-size:16px; font-weight:700; cursor:pointer; transition:opacity .2s;
+}
+.btn-primary:hover { opacity:.88; }
+
+/* ── ADMIN TABS ── */
+.admin-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+.tab-btn {
+  padding:7px 14px; border-radius:20px; border:2px solid rgba(255,220,80,.5);
+  background:rgba(255,255,255,.07); color:#ccc; font-size:13px; font-weight:700; cursor:pointer; transition:all .18s;
+}
+.tab-btn.active,.tab-btn:hover { background:rgba(255,220,80,.22); color:#ffd84d; border-color:#ffd84d; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* ── FORM ── */
+.field-row { display:flex; gap:8px; margin-bottom:10px; align-items:center; }
+.field-row input,.field-row select,.field-row textarea {
+  flex:1; padding:9px 12px; border-radius:10px;
+  border:1.5px solid rgba(255,220,80,.4); background:rgba(255,255,255,.08);
+  color:#fff; font-size:14px; outline:none;
+}
+.field-row input:focus,.field-row select:focus,.field-row textarea:focus { border-color:#ffd84d; }
+.field-row select option { background:#1a0640; color:#fff; }
+.field-row textarea { resize:vertical; min-height:60px; }
+.btn-add {
+  padding:9px 16px; border-radius:10px;
+  background:rgba(255,220,80,.22); border:1.5px solid #ffd84d;
+  color:#ffd84d; font-size:20px; cursor:pointer; flex-shrink:0; font-weight:700; transition:background .18s;
+}
+.btn-add:hover { background:rgba(255,220,80,.4); }
+.item-list { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.item-card {
+  background:rgba(255,255,255,.07); border-radius:12px;
+  padding:10px 14px; display:flex; align-items:flex-start; gap:10px; border:1px solid rgba(255,220,80,.2);
+}
+.item-card .item-body { flex:1; min-width:0; }
+.item-card .item-title { font-size:14px; font-weight:700; color:#ffd84d; }
+.item-card .item-sub { font-size:12px; color:#bbb; margin-top:3px; }
+.item-card .item-tag { display:inline-block; font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px; margin-top:5px; }
+.tag-blue { background:rgba(80,130,255,.25); color:#7aaeff; border:1px solid rgba(80,130,255,.4); }
+.tag-green { background:rgba(60,200,100,.2); color:#7deda0; border:1px solid rgba(60,200,100,.3); }
+.tag-pink { background:rgba(230,80,180,.2); color:#f090d0; border:1px solid rgba(230,80,180,.3); }
+.tag-gold { background:rgba(255,180,0,.2); color:#ffd84d; border:1px solid rgba(255,180,0,.4); }
+.tag-red { background:rgba(255,80,80,.2); color:#ff9090; border:1px solid rgba(255,80,80,.3); }
+.btn-del { background:none; border:none; color:#ff7070; font-size:18px; cursor:pointer; padding:0 4px; flex-shrink:0; }
+.btn-del:hover { color:#ff3030; }
+.sec-label { font-size:12px; font-weight:700; color:#ffd84d88; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; margin-top:4px; }
+.divider { border:none; border-top:1px solid rgba(255,220,80,.18); margin:14px 0; }
+
+/* ── KHO BÁU ── */
+.treasure-total { text-align:center; font-size:32px; font-weight:900; color:#ffd84d; margin:10px 0 4px; }
+.treasure-label { text-align:center; font-size:13px; color:#bbb; margin-bottom:16px; }
+.adj-row { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+.adj-row input { flex:1; padding:9px 12px; border-radius:10px; border:1.5px solid rgba(255,220,80,.4); background:rgba(255,255,255,.08); color:#fff; font-size:14px; outline:none; }
+.btn-plus  { padding:9px 18px; border-radius:10px; background:rgba(60,200,100,.2); border:1.5px solid #7deda0; color:#7deda0; font-size:15px; font-weight:800; cursor:pointer; }
+.btn-minus { padding:9px 18px; border-radius:10px; background:rgba(255,80,80,.15); border:1.5px solid #ff9090; color:#ff9090; font-size:15px; font-weight:800; cursor:pointer; }
+
+/* ── TIN NHẮN ── */
+.msg-card { background:linear-gradient(135deg,rgba(123,47,247,.3),rgba(224,64,251,.15)); border:1px solid rgba(224,64,251,.4); border-radius:14px; padding:12px 16px; margin-bottom:8px; }
+.msg-card .msg-time { font-size:11px; color:#bbb; margin-bottom:4px; }
+.msg-card .msg-text { font-size:14px; color:#fff; line-height:1.5; }
+.modal::-webkit-scrollbar { width:5px; }
+.modal::-webkit-scrollbar-thumb { background:rgba(255,220,80,.35); border-radius:10px; }
+
+/* ── MÀN HÌNH NHIỆM VỤ ── */
+.nv-screen {
+  display:none; position:fixed; inset:0;
+  z-index:100; background:#000;
+  overflow:hidden; pointer-events:none;
+}
+.nv-screen.active { display:block; pointer-events:auto; }
+.nv-bg { width:100%; height:100%; object-fit:cover; display:block; }
+
+.nv-back {
+  position:absolute; top:3%; left:1.5%;
+  width:7%; height:12%;
+  background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:20;
+}
+.nv-side-btn {
+  position:absolute; left:0; width:22%; height:9%;
+  background:transparent; border:none; cursor:pointer; z-index:20; border-radius:0 30px 30px 0;
+}
+.nv-side-btn:hover  { background:rgba(255,255,255,.08); }
+.nv-side-btn:active { background:rgba(255,255,255,.15); }
+
+/*
+ * Vị trí 5 ô nhiệm vụ — đo từ ảnh nhiem_vu_bg.png (2508x1412):
+ *   Ô 1: top≈22%  Ô 2: top≈37%  Ô 3: top≈52%  Ô 4: top≈67%  Ô 5: top≈81%
+ *   Text: left≈27%, width≈36%
+ *   Circle: left≈66% (điều chỉnh được)
+ */
+.nv-row {
+  position:absolute;
+  left:27%;       /* ← vị trí trái vùng text */
+  width:36%;      /* ← độ rộng vùng text    */
+  display:flex; flex-direction:column; justify-content:center;
+  padding-left:2%; z-index:20;
+}
+.nv-row-1 { top:22%;  height:9.5%; }  /* ← Ô 1 */
+.nv-row-2 { top:37%;  height:9.5%; }  /* ← Ô 2 */
+.nv-row-3 { top:52%;  height:9.5%; }  /* ← Ô 3 */
+.nv-row-4 { top:67%;  height:9.5%; }  /* ← Ô 4 */
+.nv-row-5 { top:81%;  height:9.5%; }  /* ← Ô 5 */
+
+.nv-task-name {
+  font-size:clamp(12px,1.9vw,22px); font-weight:800; color:#4a2080;
+  font-family:'Segoe UI',Arial,sans-serif;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;
+}
+.nv-task-meta {
+  font-size:clamp(9px,1.2vw,15px); color:#9070b0; margin-top:.3em;
+  font-family:'Segoe UI',Arial,sans-serif; display:flex; align-items:center; gap:4px;
+}
+
+/* Checkbox — con trực tiếp của nv-screen, KHÔNG nằm trong nv-row */
+.nv-check {
+  position:absolute;
+  left:65.8%;        /* ← vị trí ngang circle (điều chỉnh) */
+  width:4.5vw; height:4.5vw; max-width:52px; max-height:52px;
+  border-radius:50%;
+  border:3px solid rgba(180,140,220,.7); background:rgba(255,255,255,.55);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:clamp(13px,2vw,24px); font-weight:900; color:transparent;
+  transition:background .2s,border-color .2s,color .15s;
+  z-index:25; transform:translateY(-50%);
+}
+/* top = giữa của mỗi ô */
+.nv-check-1 { top:26.5%;  }  /* 22 + 9.5/2 */
+.nv-check-2 { top:41.5%;  }  /* 34 + 9.5/2 */
+.nv-check-3 { top:56.5%;  }  /* 46 + 9.5/2 */
+.nv-check-4 { top:71.3%;  }  /* 58 + 9.5/2 */
+.nv-check-5 { top:86.2%;  }  /* 70 + 9.5/2 */
+.nv-check.checked { background:#a855f7; border-color:#6b21c8; color:#fff; box-shadow:0 0 10px rgba(168,85,247,.6); }
+
+/* ── MÀN HÌNH CỬA HÀNG ── */
+.ch-screen {
+  display:none; position:fixed; inset:0;
+  z-index:100; background:#000;
+  overflow:hidden; pointer-events:none;
+}
+.ch-screen.active { display:block; pointer-events:auto; }
+.ch-bg { width:100%; height:100%; object-fit:cover; display:block; }
+
+.ch-back {
+  position:absolute; top:3%; left:1.5%; width:7%; height:12%;
+  background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:20;
+}
+.ch-diamonds {
+  position:absolute; top:2.5%; right:2%;
+  background:rgba(20,0,60,.82); border:2px solid #ffd84d; border-radius:30px;
+  padding:6px 18px 6px 12px; display:flex; align-items:center; gap:8px;
+  z-index:20; font-size:clamp(14px,2vw,22px); font-weight:900; color:#ffd84d;
+  box-shadow:0 2px 12px rgba(0,0,0,.5);
+}
+.ch-grid {
+  position:absolute;
+  top:12%; left:39%; width:58%; height:83%;    /* ← điều chỉnh nếu cần */
+  display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr);
+  gap:1.5%; padding:2%; z-index:20; overflow-y:auto;
+}
+.ch-grid::-webkit-scrollbar { width:4px; }
+.ch-grid::-webkit-scrollbar-thumb { background:rgba(255,220,80,.3); border-radius:4px; }
+.ch-card {
+  background:rgba(255,255,255,.85); border-radius:16px;
+  border:2px solid rgba(200,160,240,.5);
+  display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+  padding:5% 4% 4%; cursor:pointer;
+  transition:transform .15s,box-shadow .15s; position:relative; overflow:hidden;
+}
+.ch-card:hover { transform:scale(1.03); box-shadow:0 6px 20px rgba(120,60,200,.25); }
+.ch-card.out-of-stock { opacity:.45; }
+.ch-card-name { font-size:clamp(10px,1.15vw,15px); font-weight:700; color:#5a2090; text-align:center; line-height:1.2; margin-bottom:2%; }
+.ch-card-img { font-size:clamp(32px,5.5vw,68px); line-height:1; flex:1; display:flex; align-items:center; justify-content:center; }
+.ch-card-price { font-size:clamp(11px,1.2vw,16px); color:#7b2ff7; font-weight:800; margin-top:4%; display:flex; align-items:center; gap:5px; }
+.ch-card-qty { position:absolute; top:6px; right:8px; font-size:clamp(9px,.9vw,12px); color:#999; font-weight:600; }
+
+@media(max-width:500px){
+  .modal{padding:20px 16px;}
+  .admin-tabs{gap:5px;}
+  .tab-btn{padding:6px 10px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── MÀN HÌNH CHÍNH ── -->
+<div class="scene">
+  <img class="bg" src="bg.png" alt="Learning Hub" draggable="false">
+
+  <!-- Nhiệm vụ hôm nay: left:30.7% top:35.1% -->
+  <button class="hotspot" data-label="✅ Nhiệm vụ hôm nay"
+    style="left:15%;top:33%;width:17%;height:10%;"
+    onclick="openNhiemVu()"></button>
+
+  <!-- Mục tiêu: left:34.7% top:31.3% -->
+  <button class="hotspot" data-label="🎯 Mục tiêu"
+    style="left:40%;top:29%;width:19%;height:9%;"
+    onclick="notify('🎯 Mục tiêu')"></button>
+
+  <!-- Thư viện: left:59.8% top:40.9% -->
+  <button class="hotspot" data-label="📚 Thư viện"
+    style="left:70%;top:38%;width:17%;height:9%;"
+    onclick="notify('📚 Thư viện')"></button>
+
+  <!-- Thú cưng: left:11.1% top:68% -->
+  <button class="hotspot" data-label="🐾 Thú cưng"
+    style="left:13%;top:70%;width:17%;height:9%;"
+    onclick="notify('🐾 Thú cưng')"></button>
+
+  <!-- Kho báu: left:34.7% top:72.3% -->
+  <button class="hotspot" data-label="💎 Kho báu"
+    style="left:40%;top:69%;width:19%;height:9%;"
+    onclick="notify('💎 Kho báu')"></button>
+
+  <!-- Cửa hàng: left:56.2% top:72.3% -->
+  <button class="hotspot" data-label="🏪 Cửa hàng"
+    style="left:65%;top:75%;width:18%;height:9%;"
+    onclick="openCuaHang()"></button>
+
+  <!-- Cài đặt: top-right -->
+  <button class="hotspot" data-label="⚙️ Cài đặt"
+    style="left:81%;top:2%;width:8%;height:13%;border-radius:50%;"
+    onclick="openSettings()"></button>
+
+  <!-- Tin nhắn: top-right -->
+  <button class="hotspot" data-label="✉️ Tin nhắn"
+    style="left:89%;top:2%;width:8%;height:13%;border-radius:50%;"
+    onclick="notify('✉️ Tin nhắn')"></button>
+
+  <!-- Avatar: top-left -->
+  <button class="hotspot" data-label="👤 Hồ sơ Bé Nấm"
+    style="left:0%;top:0%;width:20%;height:20%;border-radius:50px;"
+    onclick="notify('👤 Hồ sơ Bé Nấm')"></button>
+</div>
+
+<!-- ── NHIỆM VỤ HÔM NAY ── -->
+<div class="nv-screen" id="nvScreen">
+  <img class="nv-bg" src="nhiem_vu_bg.png" alt="Nhiệm vụ hôm nay" draggable="false">
+  <button class="nv-back" onclick="closeNhiemVu()"></button>
+
+  <!-- Sidebar ẩn (đè lên các nút trong ảnh) -->
+  <button class="nv-side-btn" style="top:20%;" onclick="closeNhiemVu()"></button>
+  <button class="nv-side-btn" style="top:40%;" onclick="closeNhiemVu();setTimeout(()=>notify('📚 Thư viện'),150)"></button>
+  <button class="nv-side-btn" style="top:50%;" onclick="closeNhiemVu();setTimeout(()=>notify('🐾 Thú cưng'),150)"></button>
+  <button class="nv-side-btn" style="top:60%;" onclick="closeNhiemVu();setTimeout(()=>notify('💎 Kho báu'),150)"></button>
+  <button class="nv-side-btn" style="top:70%;" onclick="closeNhiemVu();setTimeout(()=>openCuaHang(),150)"></button>
+
+  <!-- Text rows -->
+  <div class="nv-row nv-row-1" id="nvRow1"></div>
+  <div class="nv-row nv-row-2" id="nvRow2"></div>
+  <div class="nv-row nv-row-3" id="nvRow3"></div>
+  <div class="nv-row nv-row-4" id="nvRow4"></div>
+  <div class="nv-row nv-row-5" id="nvRow5"></div>
+
+  <!-- Checkboxes tách riêng, con trực tiếp của nv-screen -->
+  <div class="nv-check nv-check-1" id="nvCheck1"></div>
+  <div class="nv-check nv-check-2" id="nvCheck2"></div>
+  <div class="nv-check nv-check-3" id="nvCheck3"></div>
+  <div class="nv-check nv-check-4" id="nvCheck4"></div>
+  <div class="nv-check nv-check-5" id="nvCheck5"></div>
+</div>
+
+<!-- ── CỬA HÀNG ── -->
+<div class="ch-screen" id="chScreen">
+  <img class="ch-bg" src="cua_hang_bg.png" alt="Cửa hàng" draggable="false">
+  <button class="ch-back" onclick="closeCuaHang()"></button>
+  <div class="ch-diamonds" id="chDiamonds">
+    <span>💎</span><span id="chDiamondCount">0</span>
+  </div>
+  <div class="ch-grid" id="chGrid"></div>
+</div>
+
+<!-- ── POPUP XÁC NHẬN ĐỔI ── -->
+<div class="overlay" id="chConfirmOverlay">
+  <div class="modal" style="max-width:360px;text-align:center;">
+    <div class="modal-title">🛍️ Xác nhận đổi quà</div>
+    <button class="modal-close" onclick="closeConfirm()">✕</button>
+    <div id="chConfirmImg" style="font-size:56px;margin:10px 0 6px;"></div>
+    <div id="chConfirmName" style="font-size:18px;font-weight:800;color:#ffd84d;margin-bottom:6px;"></div>
+    <div id="chConfirmPrice" style="font-size:15px;color:#bbb;margin-bottom:18px;"></div>
+    <div id="chConfirmBalance" style="font-size:13px;color:#9090cc;margin-bottom:18px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-primary" style="background:linear-gradient(90deg,#3cb96a,#27ae60);" onclick="closeConfirm()">❌ Hủy</button>
+      <button class="btn-primary" id="chConfirmBtn" onclick="confirmExchange()">✅ Đổi ngay</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MẬT KHẨU ── -->
+<div class="overlay" id="pwOverlay">
+  <div class="modal" id="pwModal" style="max-width:340px;">
+    <div class="modal-title">🔐 Nhập mật khẩu quản trị</div>
+    <button class="modal-close" onclick="closePw()">✕</button>
+    <div class="field-row" style="flex-direction:column;gap:0;">
+      <input type="password" id="pwInput" placeholder="••••••••" maxlength="30"
+        onkeydown="if(event.key==='Enter')checkPassword()">
+    </div>
+    <div class="pw-err" id="pwErr"></div>
+    <button class="btn-primary" onclick="checkPassword()">🔓 Mở khóa</button>
+  </div>
+</div>
+
+<!-- ── ADMIN PANEL ── -->
+<div class="overlay" id="adminOverlay">
+  <div class="modal">
+    <div class="modal-title">⚙️ Bảng quản trị</div>
+    <button class="modal-close" onclick="closeAdmin()">✕</button>
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="switchTab('nhiem-vu')">✅ Nhiệm vụ</button>
+      <button class="tab-btn" onclick="switchTab('thu-vien')">📚 Thư viện</button>
+      <button class="tab-btn" onclick="switchTab('thu-cung')">🐾 Thú cưng</button>
+      <button class="tab-btn" onclick="switchTab('kho-bau')">💎 Kho báu</button>
+      <button class="tab-btn" onclick="switchTab('cua-hang')">🏪 Cửa hàng</button>
+      <button class="tab-btn" onclick="switchTab('tin-nhan')">✉️ Tin nhắn</button>
+    </div>
+
+    <!-- NHIỆM VỤ -->
+    <div class="tab-panel active" id="tab-nhiem-vu">
+      <div class="sec-label">Thêm nhiệm vụ mới</div>
+      <div class="field-row">
+        <input type="text" id="nv-title" placeholder="Tên nhiệm vụ…" maxlength="80">
+        <select id="nv-cat">
+          <option value="Học tập">📖 Học tập</option>
+          <option value="Vận động">🏃 Vận động</option>
+          <option value="Sáng tạo">🎨 Sáng tạo</option>
+          <option value="Gia đình">🏠 Gia đình</option>
+          <option value="Khác">⭐ Khác</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <input type="number" id="nv-reward" placeholder="Điểm thưởng 💎" min="0" max="9999">
+        <input type="date" id="nv-date">
+        <button class="btn-add" onclick="addNhiemVu()">＋</button>
+      </div>
+      <hr class="divider">
+      <div class="sec-label">Danh sách nhiệm vụ</div>
+      <div class="item-list" id="nv-list"></div>
+    </div>
+
+    <!-- THƯ VIỆN -->
+    <div class="tab-panel" id="tab-thu-vien">
+      <div class="sec-label">Thêm kiến thức mới</div>
+      <div class="field-row">
+        <input type="text" id="tv-title" placeholder="Tiêu đề bài học…" maxlength="100">
+        <select id="tv-sub">
+          <option value="Toán">🔢 Toán</option>
+          <option value="Tiếng Việt">📝 Tiếng Việt</option>
+          <option value="Tiếng Anh">🌍 Tiếng Anh</option>
+          <option value="Khoa học">🔬 Khoa học</option>
+          <option value="Nghệ thuật">🎨 Nghệ thuật</option>
+          <option value="Kỹ năng sống">🌟 Kỹ năng sống</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <textarea id="tv-content" placeholder="Nội dung / ghi chú…"></textarea>
+        <button class="btn-add" onclick="addThuVien()">＋</button>
+      </div>
+      <hr class="divider">
+      <div class="sec-label">Kho kiến thức</div>
+      <div class="item-list" id="tv-list"></div>
+    </div>
+
+    <!-- THÚ CƯNG -->
+    <div class="tab-panel" id="tab-thu-cung">
+      <div class="sec-label">Lên lịch chăm sóc</div>
+      <div class="field-row">
+        <input type="text" id="tc-pet" placeholder="Tên thú cưng…" maxlength="40">
+        <select id="tc-type">
+          <option value="Cho ăn">🍖 Cho ăn</option>
+          <option value="Tắm rửa">🛁 Tắm rửa</option>
+          <option value="Thay đồ">👗 Thay đồ</option>
+          <option value="Vui chơi">🎾 Vui chơi</option>
+          <option value="Khám bệnh">🏥 Khám bệnh</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <input type="time" id="tc-time">
+        <input type="date" id="tc-date">
+        <button class="btn-add" onclick="addThuCung()">＋</button>
+      </div>
+      <hr class="divider">
+      <div class="sec-label">Lịch chăm sóc</div>
+      <div class="item-list" id="tc-list"></div>
+    </div>
+
+    <!-- KHO BÁU -->
+    <div class="tab-panel" id="tab-kho-bau">
+      <div class="sec-label">Tổng điểm kho báu</div>
+      <div class="treasure-total" id="kb-total">0</div>
+      <div class="treasure-label">💎 điểm</div>
+      <div class="adj-row">
+        <input type="number" id="kb-amount" placeholder="Số điểm…" min="1" max="99999">
+        <input type="text" id="kb-reason" placeholder="Lý do…" style="flex:1.5">
+        <button class="btn-plus" onclick="adjustKhoBau(1)">＋</button>
+        <button class="btn-minus" onclick="adjustKhoBau(-1)">－</button>
+      </div>
+      <hr class="divider">
+      <div class="sec-label">Lịch sử giao dịch</div>
+      <div class="item-list" id="kb-list"></div>
+    </div>
+
+    <!-- CỬA HÀNG -->
+    <div class="tab-panel" id="tab-cua-hang">
+      <div class="sec-label">Thêm món đồ quy đổi</div>
+      <div class="field-row">
+        <input type="text" id="ch-name" placeholder="Tên phần thưởng…" maxlength="80">
+        <input type="number" id="ch-price" placeholder="Giá 💎" min="1" max="99999">
+      </div>
+      <div class="field-row">
+        <input type="number" id="ch-qty" placeholder="Số lượng" min="1" max="999">
+        <select id="ch-cat">
+          <option value="Đồ chơi">🧸 Đồ chơi</option>
+          <option value="Hoạt động">🎡 Hoạt động</option>
+          <option value="Ăn uống">🍦 Ăn uống</option>
+          <option value="Sách">📚 Sách</option>
+          <option value="Khác">🎁 Khác</option>
+        </select>
+        <button class="btn-add" onclick="addCuaHang()">＋</button>
+      </div>
+      <hr class="divider">
+      <div class="sec-label">Danh sách cửa hàng</div>
+      <div class="item-list" id="ch-list"></div>
+    </div>
+
+    <!-- TIN NHẮN -->
+    <div class="tab-panel" id="tab-tin-nhan">
+      <div class="sec-label">Gửi tin nhắn đến Bé Nấm</div>
+      <div class="field-row">
+        <textarea id="tn-text" placeholder="Nhập tin nhắn yêu thương…" style="min-height:80px;"></textarea>
+      </div>
+      <div class="field-row">
+        <select id="tn-emoji">
+          <option value="💌">💌 Tình yêu</option>
+          <option value="⭐">⭐ Khen ngợi</option>
+          <option value="🎉">🎉 Chúc mừng</option>
+          <option value="🔔">🔔 Nhắc nhở</option>
+          <option value="💪">💪 Cổ vũ</option>
+        </select>
+        <button class="btn-add" onclick="sendTinNhan()" style="font-size:14px;padding:9px 20px;white-space:nowrap;">Gửi ✉️</button>
+      </div>
+      <hr class="divider">
+      <div class="sec-label">Hộp thư đã gửi</div>
+      <div class="item-list" id="tn-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+const ADMIN_PW = '1234'; // ← đổi mật khẩu tại đây
+
+// ══════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════
+function load(key)        { try { return JSON.parse(localStorage.getItem('lh_'+key))||[]; } catch(e){ return []; } }
+function loadVal(key,def) { const v=localStorage.getItem('lh_'+key); return v!==null?v:def; }
+function save(key,val)    { localStorage.setItem('lh_'+key,JSON.stringify(val)); }
+function saveVal(key,val) { localStorage.setItem('lh_'+key,val); }
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let _t;
+function notify(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_t); _t=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ══════════════════════════════════════════════
+// FORMAT
+// ══════════════════════════════════════════════
+function fmtDate(d) { return d?new Date(d+'T00:00').toLocaleDateString('vi-VN'):''; }
+function fmtNow()   { return new Date().toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function esc(s)     { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function shake(id)  { const el=document.getElementById(id); el.style.border='1.5px solid #ff6b6b'; setTimeout(()=>el.style.border='',1200); el.focus(); }
+
+// ══════════════════════════════════════════════
+// MẬT KHẨU / ADMIN
+// ══════════════════════════════════════════════
+function openSettings() {
+  document.getElementById('pwInput').value='';
+  document.getElementById('pwErr').textContent='';
+  document.getElementById('pwOverlay').classList.add('active');
+  setTimeout(()=>document.getElementById('pwInput').focus(),100);
+}
+function closePw()    { document.getElementById('pwOverlay').classList.remove('active'); }
+function closeAdmin() { document.getElementById('adminOverlay').classList.remove('active'); }
+
+function checkPassword() {
+  const val=document.getElementById('pwInput').value;
+  if(val===ADMIN_PW) {
+    closePw();
+    switchTab('nhiem-vu');
+    renderAll();
+    document.getElementById('adminOverlay').classList.add('active');
+  } else {
+    document.getElementById('pwErr').textContent='❌ Sai mật khẩu, thử lại nhé!';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+  }
+}
+
+function switchTab(id) {
+  const ids=['nhiem-vu','thu-vien','thu-cung','kho-bau','cua-hang','tin-nhan'];
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===id));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+id));
+}
+
+// ══════════════════════════════════════════════
+// NHIỆM VỤ (ADMIN)
+// ══════════════════════════════════════════════
+function addNhiemVu() {
+  const title=document.getElementById('nv-title').value.trim();
+  if(!title) return shake('nv-title');
+  const items=load('nhiem_vu');
+  items.unshift({ id:Date.now(), title, cat:document.getElementById('nv-cat').value,
+    reward:parseInt(document.getElementById('nv-reward').value)||0,
+    date:document.getElementById('nv-date').value, done:false });
+  save('nhiem_vu',items);
+  document.getElementById('nv-title').value='';
+  document.getElementById('nv-reward').value='';
+  renderNhiemVu();
+}
+function delNhiemVu(id) { save('nhiem_vu',load('nhiem_vu').filter(x=>x.id!==id)); renderNhiemVu(); }
+function renderNhiemVu() {
+  const items=load('nhiem_vu');
+  const cc={'Học tập':'tag-blue','Vận động':'tag-green','Sáng tạo':'tag-pink','Gia đình':'tag-gold','Khác':'tag-gold'};
+  document.getElementById('nv-list').innerHTML=items.length?items.map(x=>`
+    <div class="item-card">
+      <div class="item-body">
+        <div class="item-title">${esc(x.title)}</div>
+        <div class="item-sub">${x.date?fmtDate(x.date):'Hôm nay'}${x.reward?' · 💎 +'+x.reward:''}</div>
+        <span class="item-tag ${cc[x.cat]||'tag-gold'}">${x.cat}</span>
+        ${x.done?'<span style="color:#7deda0;font-size:12px;margin-left:6px;">✓ Hoàn thành</span>':''}
+      </div>
+      <button class="btn-del" onclick="delNhiemVu(${x.id})">🗑</button>
+    </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có nhiệm vụ nào</div>';
+}
+
+// ══════════════════════════════════════════════
+// THƯ VIỆN (ADMIN)
+// ══════════════════════════════════════════════
+function addThuVien() {
+  const title=document.getElementById('tv-title').value.trim();
+  if(!title) return shake('tv-title');
+  const items=load('thu_vien');
+  items.unshift({ id:Date.now(), title, sub:document.getElementById('tv-sub').value,
+    content:document.getElementById('tv-content').value.trim(), date:fmtNow() });
+  save('thu_vien',items);
+  document.getElementById('tv-title').value='';
+  document.getElementById('tv-content').value='';
+  renderThuVien();
+}
+function delThuVien(id) { save('thu_vien',load('thu_vien').filter(x=>x.id!==id)); renderThuVien(); }
+function renderThuVien() {
+  const items=load('thu_vien');
+  const sc={'Toán':'tag-blue','Tiếng Việt':'tag-pink','Tiếng Anh':'tag-green','Khoa học':'tag-blue','Nghệ thuật':'tag-pink','Kỹ năng sống':'tag-gold'};
+  document.getElementById('tv-list').innerHTML=items.length?items.map(x=>`
+    <div class="item-card">
+      <div class="item-body">
+        <div class="item-title">${esc(x.title)}</div>
+        ${x.content?`<div class="item-sub">${esc(x.content)}</div>`:''}
+        <span class="item-tag ${sc[x.sub]||'tag-blue'}">${x.sub}</span>
+        <span style="font-size:11px;color:#888;margin-left:6px;">${x.date}</span>
+      </div>
+      <button class="btn-del" onclick="delThuVien(${x.id})">🗑</button>
+    </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Kho kiến thức đang trống</div>';
+}
+
+// ══════════════════════════════════════════════
+// THÚ CƯNG (ADMIN)
+// ══════════════════════════════════════════════
+function addThuCung() {
+  const pet=document.getElementById('tc-pet').value.trim();
+  if(!pet) return shake('tc-pet');
+  const items=load('thu_cung');
+  items.unshift({ id:Date.now(), pet, type:document.getElementById('tc-type').value,
+    time:document.getElementById('tc-time').value, date:document.getElementById('tc-date').value });
+  save('thu_cung',items);
+  document.getElementById('tc-pet').value='';
+  document.getElementById('tc-time').value='';
+  renderThuCung();
+}
+function delThuCung(id) { save('thu_cung',load('thu_cung').filter(x=>x.id!==id)); renderThuCung(); }
+function renderThuCung() {
+  const items=load('thu_cung');
+  const tc={'Cho ăn':'tag-green','Tắm rửa':'tag-blue','Thay đồ':'tag-pink','Vui chơi':'tag-gold','Khám bệnh':'tag-red'};
+  document.getElementById('tc-list').innerHTML=items.length?items.map(x=>`
+    <div class="item-card">
+      <div class="item-body">
+        <div class="item-title">${esc(x.pet)}</div>
+        <div class="item-sub">${x.date?fmtDate(x.date):''}${x.date&&x.time?' – ':''}${x.time||''}</div>
+        <span class="item-tag ${tc[x.type]||'tag-blue'}">${x.type}</span>
+      </div>
+      <button class="btn-del" onclick="delThuCung(${x.id})">🗑</button>
+    </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có lịch chăm sóc</div>';
+}
+
+// ══════════════════════════════════════════════
+// KHO BÁU (ADMIN)
+// ══════════════════════════════════════════════
+function adjustKhoBau(sign) {
+  const amt=parseInt(document.getElementById('kb-amount').value);
+  if(!amt||amt<=0) return shake('kb-amount');
+  const reason=document.getElementById('kb-reason').value.trim()||(sign>0?'Thưởng điểm':'Trừ điểm');
+  let total=parseInt(loadVal('kb_total','0'));
+  total=Math.max(0,total+sign*amt);
+  saveVal('kb_total',total);
+  const items=load('kho_bau');
+  items.unshift({id:Date.now(),amt:sign*amt,reason,total,date:fmtNow()});
+  save('kho_bau',items.slice(0,50));
+  document.getElementById('kb-amount').value='';
+  document.getElementById('kb-reason').value='';
+  renderKhoBau();
+}
+function renderKhoBau() {
+  const total=parseInt(loadVal('kb_total','0'));
+  document.getElementById('kb-total').textContent=total.toLocaleString('vi-VN');
+  const items=load('kho_bau');
+  document.getElementById('kb-list').innerHTML=items.length?items.map(x=>{
+    const plus=x.amt>=0;
+    return `<div class="item-card"><div class="item-body">
+      <div class="item-title" style="color:${plus?'#7deda0':'#ff9090'}">${plus?'＋':''}${x.amt.toLocaleString('vi-VN')} 💎</div>
+      <div class="item-sub">${esc(x.reason)} · Còn lại: ${x.total.toLocaleString('vi-VN')}</div>
+      <div style="font-size:11px;color:#888;">${x.date}</div>
+    </div></div>`;
+  }).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có giao dịch nào</div>';
+}
+
+// ══════════════════════════════════════════════
+// CỬA HÀNG (ADMIN)
+// ══════════════════════════════════════════════
+function addCuaHang() {
+  const name=document.getElementById('ch-name').value.trim();
+  if(!name) return shake('ch-name');
+  const price=parseInt(document.getElementById('ch-price').value);
+  if(!price||price<=0) return shake('ch-price');
+  const items=load('cua_hang');
+  items.unshift({ id:Date.now(), name, price,
+    qty:parseInt(document.getElementById('ch-qty').value)||1,
+    cat:document.getElementById('ch-cat').value });
+  save('cua_hang',items);
+  document.getElementById('ch-name').value='';
+  document.getElementById('ch-price').value='';
+  document.getElementById('ch-qty').value='';
+  renderCuaHang();
+}
+function delCuaHang(id) { save('cua_hang',load('cua_hang').filter(x=>x.id!==id)); renderCuaHang(); }
+function renderCuaHang() {
+  const items=load('cua_hang');
+  const cc={'Đồ chơi':'tag-pink','Hoạt động':'tag-green','Ăn uống':'tag-gold','Sách':'tag-blue','Khác':'tag-gold'};
+  document.getElementById('ch-list').innerHTML=items.length?items.map(x=>`
+    <div class="item-card">
+      <div class="item-body">
+        <div class="item-title">${esc(x.name)}</div>
+        <div class="item-sub">💎 ${x.price.toLocaleString('vi-VN')} · SL: ${x.qty}</div>
+        <span class="item-tag ${cc[x.cat]||'tag-gold'}">${x.cat}</span>
+      </div>
+      <button class="btn-del" onclick="delCuaHang(${x.id})">🗑</button>
+    </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Cửa hàng đang trống</div>';
+}
+
+// ══════════════════════════════════════════════
+// TIN NHẮN (ADMIN)
+// ══════════════════════════════════════════════
+function sendTinNhan() {
+  const text=document.getElementById('tn-text').value.trim();
+  if(!text) return shake('tn-text');
+  const items=load('tin_nhan');
+  items.unshift({ id:Date.now(), emoji:document.getElementById('tn-emoji').value, text, date:fmtNow() });
+  save('tin_nhan',items);
+  document.getElementById('tn-text').value='';
+  renderTinNhan();
+  notify('✉️ Đã gửi tin nhắn!');
+}
+function delTinNhan(id) { save('tin_nhan',load('tin_nhan').filter(x=>x.id!==id)); renderTinNhan(); }
+function renderTinNhan() {
+  const items=load('tin_nhan');
+  document.getElementById('tn-list').innerHTML=items.length?items.map(x=>`
+    <div class="msg-card">
+      <div class="msg-time">${x.emoji} ${x.date}</div>
+      <div class="msg-text">${esc(x.text)}</div>
+      <div style="text-align:right;margin-top:6px;">
+        <button class="btn-del" onclick="delTinNhan(${x.id})" style="font-size:14px;">🗑 Xóa</button>
+      </div>
+    </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có tin nhắn nào</div>';
+}
+
+function renderAll() { renderNhiemVu(); renderThuVien(); renderThuCung(); renderKhoBau(); renderCuaHang(); renderTinNhan(); }
+
+// ══════════════════════════════════════════════
+// MÀN HÌNH NHIỆM VỤ HÔM NAY
+// ══════════════════════════════════════════════
+let nvTasks = [];
+
+function openNhiemVu() {
+  nvTasks = [];
+  renderNvScreen();
+  document.getElementById('nvScreen').classList.add('active');
+}
+function closeNhiemVu() {
+  document.getElementById('nvScreen').classList.remove('active');
+}
+
+function renderNvScreen() {
+  const today = new Date().toISOString().slice(0,10);
+  const all   = load('nhiem_vu');
+  nvTasks = all.filter(x => !x.date || x.date === today).slice(0,5);
+  const icon  = {'Học tập':'📖','Vận động':'🏃','Sáng tạo':'🎨','Gia đình':'🏠','Khác':'⭐'};
+
+  for (let i=0;i<5;i++) {
+    const row   = document.getElementById('nvRow'+(i+1));
+    const chk   = document.getElementById('nvCheck'+(i+1));
+    const task  = nvTasks[i];
+    if (task) {
+      row.innerHTML =
+        `<div class="nv-task-name">${icon[task.cat]||'⭐'} ${esc(task.title)}</div>`+
+        (task.reward?`<div class="nv-task-meta">💎 <span style="color:#c07000;font-weight:700;">+${task.reward} điểm</span></div>`:'');
+      chk.style.display = 'flex';
+      chk.className = 'nv-check nv-check-'+(i+1)+(task.done?' checked':'');
+      chk.textContent = task.done ? '✓' : '';
+      chk.onclick = (function(idx){ return function(){ toggleNvDone(idx,this); }; })(i);
+    } else {
+      row.innerHTML = '';
+      chk.style.display = 'none';
+      chk.onclick = null;
+    }
+  }
+}
+
+function toggleNvDone(idx, el) {
+  if (!nvTasks[idx]) return;
+  const taskId = nvTasks[idx].id;
+  const items  = load('nhiem_vu');
+  const ri     = items.findIndex(x=>x.id===taskId);
+  if (ri<0) return;
+
+  items[ri].done = !items[ri].done;
+  save('nhiem_vu', items);
+  nvTasks[idx].done = items[ri].done;
+
+  el.classList.toggle('checked', items[ri].done);
+  el.textContent = items[ri].done ? '✓' : '';
+
+  const reward = items[ri].reward||0;
+  if (reward>0) {
+    let total = parseInt(loadVal('kb_total','0'));
+    total = Math.max(0, total+(items[ri].done?reward:-reward));
+    saveVal('kb_total', total);
+    const hist = load('kho_bau');
+    hist.unshift({ id:Date.now(), amt:items[ri].done?reward:-reward,
+      reason:(items[ri].done?'✅ Hoàn thành: ':'↩️ Bỏ tick: ')+items[ri].title,
+      total, date:fmtNow() });
+    save('kho_bau', hist.slice(0,50));
+    notify((items[ri].done?'💎 +':'💎 -')+reward+' điểm!');
+  }
+}
+
+// ══════════════════════════════════════════════
+// MÀN HÌNH CỬA HÀNG
+// ══════════════════════════════════════════════
+let chPendingId = null;
+
+function openCuaHang() {
+  renderChScreen();
+  document.getElementById('chScreen').classList.add('active');
+}
+function closeCuaHang() {
+  document.getElementById('chScreen').classList.remove('active');
+}
+function renderChScreen() {
+  const total = parseInt(loadVal('kb_total','0'));
+  document.getElementById('chDiamondCount').textContent = total.toLocaleString('vi-VN');
+  const items = load('cua_hang');
+  const emoji = {'Đồ chơi':'🧸','Hoạt động':'🎡','Ăn uống':'🍦','Sách':'📚','Khác':'🎁'};
+  const grid  = document.getElementById('chGrid');
+  if (!items.length) {
+    grid.innerHTML='<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:#9070b0;font-size:16px;font-weight:700;">Cửa hàng đang trống 🛍️</div>';
+    return;
+  }
+  grid.innerHTML = items.map(x=>{
+    const noStock = x.qty<=0;
+    return `<div class="ch-card${noStock?' out-of-stock':''}"
+      onclick="${noStock?'':('askExchange('+x.id+')')}"
+      style="cursor:${noStock?'default':'pointer'}">
+      <div class="ch-card-qty">SL: ${x.qty}</div>
+      <div class="ch-card-name">${esc(x.name)}</div>
+      <div class="ch-card-img">${emoji[x.cat]||'🎁'}</div>
+      <div class="ch-card-price">💎 ${x.price.toLocaleString('vi-VN')} điểm</div>
+    </div>`;
+  }).join('');
+}
+function askExchange(id) {
+  const items = load('cua_hang');
+  const x     = items.find(i=>i.id===id);
+  if (!x) return;
+  const total = parseInt(loadVal('kb_total','0'));
+  const emoji = {'Đồ chơi':'🧸','Hoạt động':'🎡','Ăn uống':'🍦','Sách':'📚','Khác':'🎁'};
+  chPendingId = id;
+  document.getElementById('chConfirmImg').textContent   = emoji[x.cat]||'🎁';
+  document.getElementById('chConfirmName').textContent  = x.name;
+  document.getElementById('chConfirmPrice').textContent = '💎 '+x.price.toLocaleString('vi-VN')+' điểm';
+  document.getElementById('chConfirmBalance').textContent =
+    'Kim cương hiện có: '+total.toLocaleString('vi-VN')+' → Còn lại: '+Math.max(0,total-x.price).toLocaleString('vi-VN');
+  const btn=document.getElementById('chConfirmBtn');
+  if (total<x.price) { btn.disabled=true; btn.textContent='💎 Không đủ điểm'; btn.style.background='#888'; }
+  else               { btn.disabled=false; btn.textContent='✅ Đổi ngay'; btn.style.background=''; }
+  document.getElementById('chConfirmOverlay').classList.add('active');
+}
+function closeConfirm() {
+  chPendingId=null;
+  document.getElementById('chConfirmOverlay').classList.remove('active');
+}
+function confirmExchange() {
+  if (!chPendingId) return;
+  const items = load('cua_hang');
+  const idx   = items.findIndex(i=>i.id===chPendingId);
+  if (idx<0) return closeConfirm();
+  const x     = items[idx];
+  let total   = parseInt(loadVal('kb_total','0'));
+  if (total<x.price) { notify('💎 Không đủ kim cương!'); return closeConfirm(); }
+  total -= x.price;
+  saveVal('kb_total', total);
+  const hist=load('kho_bau');
+  hist.unshift({id:Date.now(),amt:-x.price,reason:'🛍️ Đổi quà: '+x.name,total,date:fmtNow()});
+  save('kho_bau',hist.slice(0,50));
+  items[idx].qty=Math.max(0,x.qty-1);
+  save('cua_hang',items);
+  closeConfirm();
+  notify('🎉 Đổi thành công: '+x.name+'!');
+  renderChScreen();
+}
+
+// ══════════════════════════════════════════════
+// CLOSE ON BACKDROP
+// ══════════════════════════════════════════════
+document.getElementById('pwOverlay').addEventListener('click',      e=>{ if(e.target===e.currentTarget) closePw(); });
+document.getElementById('adminOverlay').addEventListener('click',   e=>{ if(e.target===e.currentTarget) closeAdmin(); });
+document.getElementById('chConfirmOverlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeConfirm(); });
+</script>
+</body>
+</html>
