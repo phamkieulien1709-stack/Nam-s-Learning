@@ -284,6 +284,70 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
 }
 .ca-speech.show { opacity:1; }
 
+/* ── MÀN HÌNH QUIZ CHO ĂN ── */
+.cq-screen {
+  display:none; position:fixed; inset:0;
+  z-index:160; overflow:hidden; pointer-events:none;
+}
+.cq-screen.active { display:block; pointer-events:auto; }
+.cq-bg { width:100%; height:100%; object-fit:cover; display:block; }
+.cq-back {
+  position:absolute; top:3%; left:1.5%; width:7%; height:12%;
+  background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:30;
+}
+.cq-question {
+  position:absolute; top:38%; left:50%; transform:translateX(-50%);
+  font-size:clamp(20px,3vw,42px); font-weight:900; color:#4a1580;
+  font-family:'Segoe UI',sans-serif; z-index:30; text-align:center;
+  pointer-events:none; white-space:nowrap;
+}
+.cq-progress {
+  position:absolute; top:32%; left:53%; transform:translateX(-50%);
+  display:flex; gap:6px; z-index:30; pointer-events:none;
+}
+.cq-star { font-size:clamp(14px,2vw,26px); filter:grayscale(1) brightness(1.5); transition:filter .3s; }
+.cq-star.lit { filter:none; }
+.cq-opt-hot {
+  position:absolute; background:transparent; border:none;
+  cursor:pointer; z-index:30; border-radius:14px;
+}
+.cq-opt-hot:active { background:rgba(109,40,217,.12); }
+.cq-opt-val {
+  position:absolute; z-index:31; pointer-events:none;
+  font-size:clamp(14px,2vw,26px); font-weight:900; color:#4a1580;
+  font-family:'Segoe UI',sans-serif;
+  transform:translate(-50%,-50%);
+}
+.cq-opt-hot.selected { background:rgba(109,40,217,.18); }
+.cq-opt-hot.correct  { background:rgba(22,163,74,.22); }
+.cq-opt-hot.wrong    { background:rgba(220,38,38,.18); }
+.cq-check-hot {
+  position:absolute; background:transparent; border:none;
+  cursor:pointer; z-index:30; border-radius:40px;
+}
+.cq-check-hot:disabled { opacity:.4; cursor:default; }
+.cq-feedback {
+  position:absolute; top:22%; left:50%; transform:translateX(-50%);
+  background:rgba(255,255,255,.96); border-radius:30px; padding:10px 26px;
+  font-size:clamp(14px,1.8vw,22px); font-weight:800; color:#7b2ff7;
+  box-shadow:0 4px 18px rgba(0,0,0,.22); border:2px solid #ffd84d;
+  z-index:40; pointer-events:none; opacity:0; transition:opacity .25s;
+  white-space:nowrap; font-family:'Segoe UI',sans-serif;
+}
+.cq-feedback.show { opacity:1; }
+
+/* ── MÀN HÌNH CHÚC MỪNG ── */
+.cr-screen {
+  display:none; position:fixed; inset:0;
+  z-index:170; overflow:hidden; pointer-events:none;
+}
+.cr-screen.active { display:block; pointer-events:auto; }
+.cr-bg { width:100%; height:100%; object-fit:cover; display:block; }
+.cr-back {
+  position:absolute; top:3%; left:1.5%; width:7%; height:12%;
+  background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:30;
+}
+
 /* ── MÀN HÌNH CỬA HÀNG ── */
 .ch-screen {
   display:none; position:fixed; inset:0;
@@ -572,9 +636,42 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
   <button class="ca-back" onclick="closeChoAn()"></button>
   <div class="ca-speech" id="caSpeech">Meow~ 🐾</div>
   <!-- Nút ẩn đè lên 3 hình vẽ trong ảnh cho_an_bg — chỉnh left/top/width/height theo ảnh thực tế -->
-  <button class="ca-food-hot" data-label="🐟 Cá"      style="left:25%;top:85%;width:12%;height:12%;" onclick="feedPet('Cá','🐟')"></button>
-  <button class="ca-food-hot" data-label="🍖 Thức ăn" style="left:35%;top:85%;width:12%;height:12%;" onclick="feedPet('Thức ăn','🍖')"></button>
-  <button class="ca-food-hot" data-label="🎂 Bánh"    style="left:50%;top:85%;width:12%;height:12%;" onclick="feedPet('Bánh','🎂')"></button>
+  <button class="ca-food-hot" data-label="🐟 Cá"      style="left:25%;top:85%;width:12%;height:12%;" onclick="feedPet('Cá')"></button>
+  <button class="ca-food-hot" data-label="🍖 Thức ăn" style="left:35%;top:85%;width:12%;height:12%;" onclick="feedPet('Thức ăn')"></button>
+  <button class="ca-food-hot" data-label="🎂 Bánh"    style="left:50%;top:85%;width:12%;height:12%;" onclick="feedPet('Bánh')"></button>
+</div>
+
+<!-- ── QUIZ CHO ĂN ── -->
+<div class="cq-screen" id="cqScreen">
+  <img class="cq-bg" src="cho_an_2_bg.png" alt="Quiz cho ăn" draggable="false">
+  <button class="cq-back" onclick="closeCqScreen()"></button>
+  <div class="cq-progress" id="cqProgress">
+    <span class="cq-star" id="cqStar0">⭐</span>
+    <span class="cq-star" id="cqStar1">⭐</span>
+    <span class="cq-star" id="cqStar2">⭐</span>
+    <span class="cq-star" id="cqStar3">⭐</span>
+    <span class="cq-star" id="cqStar4">⭐</span>
+  </div>
+  <div class="cq-question" id="cqQuestion"></div>
+  <!-- 4 vùng bấm ẩn đè lên ô A B C D trong ảnh -->
+  <button class="cq-opt-hot" id="cqHot0" style="left:28%;top:45%;width:22%;height:16%;" onclick="selectOpt(0)"></button>
+  <button class="cq-opt-hot" id="cqHot1" style="left:52%;top:45%;width:22%;height:16%;" onclick="selectOpt(1)"></button>
+  <button class="cq-opt-hot" id="cqHot2" style="left:28%;top:60%;width:22%;height:16%;" onclick="selectOpt(2)"></button>
+  <button class="cq-opt-hot" id="cqHot3" style="left:52%;top:60%;width:22%;height:16%;" onclick="selectOpt(3)"></button>
+  <!-- Text đáp án -->
+  <div class="cq-opt-val" id="cqVal0" style="left:42%;top:55%;"></div>
+  <div class="cq-opt-val" id="cqVal1" style="left:64%;top:55%;"></div>
+  <div class="cq-opt-val" id="cqVal2" style="left:42%;top:70%;"></div>
+  <div class="cq-opt-val" id="cqVal3" style="left:64%;top:70%;"></div>
+  <!-- Nút Kiểm tra ẩn -->
+  <button class="cq-check-hot" id="cqCheckBtn" style="left:35%;top:80%;width:30%;height:9%;" onclick="checkAnswer()" disabled></button>
+  <div class="cq-feedback" id="cqFeedback"></div>
+</div>
+
+<!-- ── CHÚC MỪNG CHO ĂN ── -->
+<div class="cr-screen" id="crScreen">
+  <img class="cr-bg" id="crBg" src="" alt="Chúc mừng" draggable="false">
+  <button class="cr-back" onclick="closeCrScreen()"></button>
 </div>
 
 <!-- ── MẬT KHẨU ── -->
@@ -1126,13 +1223,151 @@ document.addEventListener('touchend', () => {
   }, 600);
 }, { passive: true });
 
-let _feedTimer = null;
-function feedPet(name, icon) {
-  const sp = document.getElementById('caSpeech');
-  sp.textContent = icon + ' Mimi thích ' + name + ' lắm! ~♡';
-  sp.classList.add('show');
-  clearTimeout(_feedTimer);
-  _feedTimer = setTimeout(() => sp.classList.remove('show'), 2500);
+// ══════════════════════════════════════════════
+// QUIZ CHO ĂN
+// ══════════════════════════════════════════════
+let cqMode = '', cqStreak = 0, cqAnswer = 0, cqSelected = -1, cqLocked = false;
+let _cqFbTimer = null;
+
+// Bản đồ món ăn → ảnh chúc mừng
+const CQ_CONGRATS = {
+  'ca':       'an_ca_bg.png',
+  'thuc_an':  'thuc_an_bg.png',
+  'banh':     'an_banh_bg.png'
+};
+
+function feedPet(foodName) {
+  cqMode   = foodName === 'Cá' ? 'ca' : foodName === 'Thức ăn' ? 'thuc_an' : 'banh';
+  cqStreak = 0;
+  document.getElementById('caScreen').classList.remove('active');
+  document.getElementById('cqScreen').classList.add('active');
+  cqNextQuestion();
+}
+
+function closeCqScreen() {
+  document.getElementById('cqScreen').classList.remove('active');
+  document.getElementById('caScreen').classList.add('active');
+  cqStreak = 0;
+  hideCqFeedback();
+}
+
+function closeCrScreen() {
+  document.getElementById('crScreen').classList.remove('active');
+  // Quay về màn hình thú cưng
+  document.getElementById('tcScreen').classList.add('active');
+}
+
+function cqNextQuestion() {
+  cqSelected = -1; cqLocked = false;
+  [0,1,2,3].forEach(i => {
+    const h = document.getElementById('cqHot'+i);
+    h.classList.remove('selected','correct','wrong');
+    h.disabled = false;
+  });
+  document.getElementById('cqCheckBtn').disabled = true;
+  hideCqFeedback();
+  updateCqStars();
+
+  let q = '', opts = [];
+  if (cqMode === 'ca') {
+    const a = randInt(100,899), b = randInt(100,999-a);
+    q = a + ' + ' + b + ' = ?';
+    cqAnswer = a + b;
+    opts = makeOpts(cqAnswer, 12, 1998);
+  } else if (cqMode === 'thuc_an') {
+    const a = randInt(2,9), b = randInt(2,9);
+    q = a + ' × ' + b + ' = ?';
+    cqAnswer = a * b;
+    opts = makeOpts(cqAnswer, 5, 81);
+  } else {
+    const b = randInt(2,9), a = b * randInt(2,9);
+    q = a + ' ÷ ' + b + ' = ?';
+    cqAnswer = a / b;
+    opts = makeOpts(cqAnswer, 3, 9);
+  }
+
+  document.getElementById('cqQuestion').textContent = q;
+  const shuffled = shuffle([...opts]);
+  shuffled.forEach((v,i) => document.getElementById('cqVal'+i).textContent = v);
+}
+
+function selectOpt(idx) {
+  if (cqLocked) return;
+  cqSelected = idx;
+  [0,1,2,3].forEach(i =>
+    document.getElementById('cqHot'+i).classList.toggle('selected', i===idx)
+  );
+  document.getElementById('cqCheckBtn').disabled = false;
+}
+
+function checkAnswer() {
+  if (cqSelected < 0 || cqLocked) return;
+  cqLocked = true;
+  const chosen = parseInt(document.getElementById('cqVal'+cqSelected).textContent);
+  const correct = chosen === cqAnswer;
+
+  [0,1,2,3].forEach(i => {
+    const v = parseInt(document.getElementById('cqVal'+i).textContent);
+    const h = document.getElementById('cqHot'+i);
+    h.disabled = true;
+    h.classList.remove('selected');
+    if (v === cqAnswer)               h.classList.add('correct');
+    if (i === cqSelected && !correct) h.classList.add('wrong');
+  });
+
+  if (correct) {
+    cqStreak++;
+    updateCqStars();
+    if (cqStreak >= 5) {
+      // Hoàn thành → hiển thị ảnh chúc mừng
+      showCqFeedback('🎉 Xuất sắc! MiMi được ăn rồi! ✨');
+      setTimeout(() => {
+        hideCqFeedback();
+        document.getElementById('cqScreen').classList.remove('active');
+        // Đặt ảnh chúc mừng đúng món
+        document.getElementById('crBg').src = CQ_CONGRATS[cqMode] || '';
+        document.getElementById('crScreen').classList.add('active');
+        cqStreak = 0;
+      }, 1800);
+    } else {
+      showCqFeedback('✅ Đúng rồi! Làm tiếp nhé ~');
+      setTimeout(() => { hideCqFeedback(); cqNextQuestion(); }, 1400);
+    }
+  } else {
+    cqStreak = 0;
+    updateCqStars();
+    showCqFeedback('❌ Sai rồi! Bắt đầu lại từ đầu nhé~');
+    setTimeout(() => { hideCqFeedback(); cqNextQuestion(); }, 1800);
+  }
+}
+
+function updateCqStars() {
+  for (let i=0;i<5;i++)
+    document.getElementById('cqStar'+i).classList.toggle('lit', i<cqStreak);
+}
+function showCqFeedback(msg) {
+  clearTimeout(_cqFbTimer);
+  const el = document.getElementById('cqFeedback');
+  el.textContent = msg; el.classList.add('show');
+}
+function hideCqFeedback() {
+  clearTimeout(_cqFbTimer);
+  document.getElementById('cqFeedback').classList.remove('show');
+}
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function makeOpts(correct, spread, max) {
+  const set = new Set([correct]);
+  let tries=0;
+  while(set.size<4 && tries++<300){
+    const v=correct+(Math.random()<.5?1:-1)*randInt(1,spread);
+    if(v>0&&v<=max&&v!==correct) set.add(v);
+  }
+  let f=1; while(set.size<4){if(!set.has(correct+f))set.add(correct+f);f++;}
+  return [...set];
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
 }
 
 // ══════════════════════════════════════════════
