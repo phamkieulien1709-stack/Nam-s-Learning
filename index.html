@@ -243,6 +243,47 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
   background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:20;
 }
 
+/* ── MÀN HÌNH CHO ĂN ── */
+.ca-screen {
+  display:none; position:fixed; inset:0;
+  z-index:150; background:#000;
+  overflow:hidden; pointer-events:none;
+}
+.ca-screen.active { display:block; pointer-events:auto; }
+.ca-bg { width:100%; height:100%; object-fit:cover; display:block; }
+.ca-back {
+  position:absolute; top:3%; left:1.5%; width:7%; height:12%;
+  background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:20;
+}
+.ca-food-hot {
+  position:absolute; background:transparent; border:none;
+  cursor:pointer; z-index:20; border-radius:16px;
+}
+.ca-food-hot:active { opacity:.7; }
+.ca-food-hot::after {
+  content: attr(data-label);
+  position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  background:rgba(255,255,255,.95); color:#7b2ff7;
+  font-size:clamp(13px,1.8vw,20px); font-weight:800;
+  padding:6px 18px; border-radius:30px;
+  border:2px solid #ffd84d; box-shadow:0 3px 12px rgba(0,0,0,.25);
+  white-space:nowrap; pointer-events:none;
+  opacity:0; transition:opacity .15s;
+  font-family:'Segoe UI',sans-serif;
+}
+.ca-food-hot:hover::after,
+.ca-food-hot.touched::after { opacity:1; }
+.ca-speech {
+  position:absolute; top:18%; left:50%; transform:translateX(-50%);
+  background:#fff; border-radius:30px; padding:12px 28px;
+  font-size:clamp(16px,2.2vw,26px); font-weight:800; color:#7b2ff7;
+  box-shadow:0 4px 18px rgba(0,0,0,.2); border:2px solid rgba(255,220,80,.6);
+  z-index:20; pointer-events:none; opacity:0;
+  transition:opacity .3s ease;
+  white-space:nowrap;
+}
+.ca-speech.show { opacity:1; }
+
 /* ── MÀN HÌNH CỬA HÀNG ── */
 .ch-screen {
   display:none; position:fixed; inset:0;
@@ -519,6 +560,21 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
 <div class="tc-screen" id="tcScreen">
   <img class="tc-bg" src="thu_cung_bg.png" alt="Thú cưng" draggable="false">
   <button class="tc-back" onclick="closeThuCungScreen()"></button>
+  <!-- Nút Cho ăn (vị trí trên ảnh thu_cung_bg) -->
+  <button class="hotspot" data-label="🍖 Cho ăn"
+    style="position:absolute;left:2%;top:34%;width:20%;height:9%;border-radius:30px;"
+    onclick="openChoAn()"></button>
+</div>
+
+<!-- ── CHO ĂN SCREEN ── -->
+<div class="ca-screen" id="caScreen">
+  <img class="ca-bg" src="cho_an_bg.png" alt="Cho ăn" draggable="false">
+  <button class="ca-back" onclick="closeChoAn()"></button>
+  <div class="ca-speech" id="caSpeech">Meow~ 🐾</div>
+  <!-- Nút ẩn đè lên 3 hình vẽ trong ảnh cho_an_bg — chỉnh left/top/width/height theo ảnh thực tế -->
+  <button class="ca-food-hot" data-label="🐟 Cá"      style="left:25%;top:85%;width:12%;height:12%;" onclick="feedPet('Cá','🐟')"></button>
+  <button class="ca-food-hot" data-label="🍖 Thức ăn" style="left:35%;top:85%;width:12%;height:12%;" onclick="feedPet('Thức ăn','🍖')"></button>
+  <button class="ca-food-hot" data-label="🎂 Bánh"    style="left:50%;top:85%;width:12%;height:12%;" onclick="feedPet('Bánh','🎂')"></button>
 </div>
 
 <!-- ── MẬT KHẨU ── -->
@@ -1046,6 +1102,37 @@ function openThuCungScreen() {
 }
 function closeThuCungScreen() {
   document.getElementById('tcScreen').classList.remove('active');
+}
+
+// ── CHO ĂN ──
+function openChoAn() {
+  document.getElementById('caScreen').classList.add('active');
+}
+function closeChoAn() {
+  document.getElementById('caScreen').classList.remove('active');
+  const sp = document.getElementById('caSpeech');
+  sp.classList.remove('show');
+}
+// Touch label cho .ca-food-hot trên mobile
+document.addEventListener('touchstart', e => {
+  const btn = e.target.closest('.ca-food-hot');
+  if (!btn) return;
+  document.querySelectorAll('.ca-food-hot.touched').forEach(b => b.classList.remove('touched'));
+  btn.classList.add('touched');
+}, { passive: true });
+document.addEventListener('touchend', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.ca-food-hot.touched').forEach(b => b.classList.remove('touched'));
+  }, 600);
+}, { passive: true });
+
+let _feedTimer = null;
+function feedPet(name, icon) {
+  const sp = document.getElementById('caSpeech');
+  sp.textContent = icon + ' Mimi thích ' + name + ' lắm! ~♡';
+  sp.classList.add('show');
+  clearTimeout(_feedTimer);
+  _feedTimer = setTimeout(() => sp.classList.remove('show'), 2500);
 }
 
 // ══════════════════════════════════════════════
