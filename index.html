@@ -175,6 +175,31 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
 .nv-row-4 { top:64%;  height:9.5%; }  /* ← Ô 4 */
 .nv-row-5 { top:77%;  height:9.5%; }  /* ← Ô 5 */
 
+/* Phễu lọc ngày */
+.nv-filter {
+  position:absolute; top:7%; left:85%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:8px; z-index:30;
+  background:rgba(255,255,255,0.18); backdrop-filter:blur(6px);
+  border:1.5px solid rgba(180,140,255,0.4); border-radius:30px;
+  padding:5px 14px; box-shadow:0 2px 12px rgba(100,0,200,.15);
+}
+.nv-filter-date {
+  background:transparent; border:none; outline:none;
+  color:#3a1060; font-weight:700; font-size:clamp(12px,1.6vw,18px);
+  font-family:'Segoe UI',Arial,sans-serif; cursor:pointer; text-align:center;
+}
+.nv-filter-date::-webkit-calendar-picker-indicator { opacity:0.5; cursor:pointer; }
+.nv-filter-arrow {
+  background:none; border:none; color:#7c3aed; font-size:clamp(12px,1.5vw,18px);
+  cursor:pointer; padding:0 2px; line-height:1; font-weight:900;
+}
+.nv-filter-arrow:hover { color:#4a1090; }
+.nv-empty-msg {
+  position:absolute; top:50%; left:27%; width:46%; transform:translateY(-50%);
+  text-align:center; color:#9070b0; font-size:clamp(12px,1.8vw,20px);
+  font-weight:600; font-family:'Segoe UI',Arial,sans-serif; pointer-events:none;
+}
+
 .nv-task-name {
   font-size:clamp(12px,1.9vw,22px); font-weight:800; color:#4a2080;
   font-family:'Segoe UI',Arial,sans-serif;
@@ -330,6 +355,13 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
   <button class="nv-side-btn" style="top:50%;" onclick="closeNhiemVu();setTimeout(()=>notify('🐾 Thú cưng'),150)"></button>
   <button class="nv-side-btn" style="top:60%;" onclick="closeNhiemVu();setTimeout(()=>notify('💎 Kho báu'),150)"></button>
   <button class="nv-side-btn" style="top:70%;" onclick="closeNhiemVu();setTimeout(()=>openCuaHang(),150)"></button>
+
+  <!-- Phễu lọc ngày -->
+  <div class="nv-filter" id="nvFilter">
+    <button class="nv-filter-arrow" onclick="nvChangeDate(-1)">◀</button>
+    <input type="date" class="nv-filter-date" id="nvDatePicker" onchange="nvPickDate()">
+    <button class="nv-filter-arrow" onclick="nvChangeDate(1)">▶</button>
+  </div>
 
   <!-- Text rows -->
   <div class="nv-row nv-row-1" id="nvRow1"></div>
@@ -999,8 +1031,18 @@ function renderAll() { renderNhiemVu(); renderThuVien(); renderThuCung(); render
 // MÀN HÌNH NHIỆM VỤ HÔM NAY
 // ══════════════════════════════════════════════
 let nvTasks = [];
+let nvSelectedDate = ''; // YYYY-MM-DD, ngày đang xem
+
+function localToday() {
+  const n = new Date();
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+}
 
 function openNhiemVu() {
+  nvSelectedDate = localToday();
+  const picker = document.getElementById('nvDatePicker');
+  picker.value = nvSelectedDate;
+  picker.max   = nvSelectedDate; // không cho chọn tương lai
   nvTasks = [];
   renderNvScreen();
   document.getElementById('nvScreen').classList.add('active');
@@ -1009,29 +1051,98 @@ function closeNhiemVu() {
   document.getElementById('nvScreen').classList.remove('active');
 }
 
-function renderNvScreen() {
-  const today = new Date().toISOString().slice(0,10);
-  const all   = load('nhiem_vu');
-  nvTasks = all.filter(x => !x.date || x.date === today).slice(0,5);
-  const icon  = {'Học tập':'📖','Vận động':'🏃','Sáng tạo':'🎨','Gia đình':'🏠','Khác':'⭐'};
+// Nhảy ngày bằng nút ◀ ▶
+function nvChangeDate(delta) {
+  const today = localToday();
+  const d = new Date(nvSelectedDate + 'T00:00');
+  d.setDate(d.getDate() + delta);
+  const next = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  if (next > today) return; // không cho vượt hôm nay
+  nvSelectedDate = next;
+  document.getElementById('nvDatePicker').value = nvSelectedDate;
+  renderNvScreen();
+}
 
-  for (let i=0;i<5;i++) {
-    const row   = document.getElementById('nvRow'+(i+1));
-    const chk   = document.getElementById('nvCheck'+(i+1));
-    const task  = nvTasks[i];
+// Chọn ngày bằng input date
+function nvPickDate() {
+  const today = localToday();
+  const picked = document.getElementById('nvDatePicker').value;
+  if (!picked || picked > today) return;
+  nvSelectedDate = picked;
+  renderNvScreen();
+}
+
+function renderNvScreen() {
+  const today    = localToday();
+  const viewing  = nvSelectedDate || today;
+  const isToday  = (viewing === today);
+  const all      = load('nhiem_vu');
+  const icon     = {'Học tập':'📖','Vận động':'🏃','Sáng tạo':'🎨','Gia đình':'🏠','Khác':'⭐'};
+
+  /*
+   * LOGIC LỌC:
+   * - Không có ngày          → KHÔNG hiện
+   * - date === viewing       → hiện (mọi trạng thái)
+   * - date < viewing (quá khứ) và chưa hoàn thành
+   *     → chỉ hiện ở đúng ngày đó (viewing === date), KHÔNG kéo sang hôm nay
+   *
+   * Vì vậy: khi xem ngày X, chỉ lấy task có date === X
+   * (task quá hạn chưa done sẽ xuất hiện đúng ở ngày của nó khi user lọc về ngày đó)
+   */
+  nvTasks = all.filter(x => x.date && x.date === viewing).slice(0, 5);
+
+  // Ẩn/hiện nút ▶ (không cho vượt hôm nay)
+  document.querySelector('.nv-filter-arrow:last-child').disabled = (viewing >= today);
+
+  for (let i = 0; i < 5; i++) {
+    const row  = document.getElementById('nvRow' + (i+1));
+    const chk  = document.getElementById('nvCheck' + (i+1));
+    const task = nvTasks[i];
+
     if (task) {
       row.innerHTML =
-        `<div class="nv-task-name">${icon[task.cat]||'⭐'} ${esc(task.title)}</div>`+
-        (task.reward?`<div class="nv-task-meta">💎 <span style="color:#c07000;font-weight:700;">+${task.reward} điểm</span></div>`:'');
-      chk.style.display = 'flex';
-      chk.className = 'nv-check nv-check-'+(i+1)+(task.done?' checked':'');
-      chk.textContent = task.done ? '✓' : '';
-      chk.onclick = (function(idx){ return function(){ toggleNvDone(idx,this); }; })(i);
+        `<div class="nv-task-name">${icon[task.cat]||'⭐'} ${esc(task.title)}</div>` +
+        (task.reward ? `<div class="nv-task-meta">💎 <span style="color:#c07000;font-weight:700;">+${task.reward} điểm</span></div>` : '');
+
+      if (isToday) {
+        // Hôm nay → checkbox tương tác bình thường
+        chk.style.display = 'flex';
+        chk.className = 'nv-check nv-check-' + (i+1) + (task.done ? ' checked' : '');
+        chk.textContent = task.done ? '✓' : '';
+        chk.style.opacity = '';
+        chk.style.cursor  = 'pointer';
+        chk.onclick = (function(idx){ return function(){ toggleNvDone(idx, this); }; })(i);
+      } else {
+        // Quá khứ → checkbox hiển thị trạng thái nhưng KHÔNG tương tác
+        chk.style.display = 'flex';
+        chk.className = 'nv-check nv-check-' + (i+1) + (task.done ? ' checked' : '');
+        chk.textContent = task.done ? '✓' : '';
+        chk.style.opacity = '0.5';
+        chk.style.cursor  = 'not-allowed';
+        chk.onclick = null;
+      }
     } else {
       row.innerHTML = '';
-      chk.style.display = 'none';
+      chk.style.display  = 'none';
+      chk.style.opacity  = '';
+      chk.style.cursor   = '';
       chk.onclick = null;
     }
+  }
+
+  // Thông báo nếu không có nhiệm vụ nào
+  let emptyEl = document.getElementById('nvEmptyMsg');
+  if (!nvTasks.length) {
+    if (!emptyEl) {
+      emptyEl = document.createElement('div');
+      emptyEl.id = 'nvEmptyMsg';
+      emptyEl.className = 'nv-empty-msg';
+      document.getElementById('nvScreen').appendChild(emptyEl);
+    }
+    emptyEl.textContent = isToday ? 'Hôm nay chưa có nhiệm vụ nào 🌟' : 'Không có nhiệm vụ ngày này';
+    emptyEl.style.display = 'block';
+  } else if (emptyEl) {
+    emptyEl.style.display = 'none';
   }
 }
 
