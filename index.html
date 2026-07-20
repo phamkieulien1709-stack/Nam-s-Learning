@@ -272,23 +272,134 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
 .ch-grid::-webkit-scrollbar { width:4px; }
 .ch-grid::-webkit-scrollbar-thumb { background:rgba(255,220,80,.3); border-radius:4px; }
 .ch-card {
-  background:rgba(255,255,255,.85); border-radius:16px;
-  border:2px solid rgba(200,160,240,.5);
-  display:flex; flex-direction:column; align-items:center; justify-content:space-between;
-  padding:5% 4% 4%; cursor:pointer;
-  transition:transform .15s,box-shadow .15s; position:relative; overflow:hidden;
+  background:transparent; border-radius:16px;
+  border:none;
+  display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-start;
+  padding:4% 4% 0; cursor:pointer;
+  transition:transform .15s; position:relative; overflow:hidden;
 }
-.ch-card:hover { transform:scale(1.03); box-shadow:0 6px 20px rgba(120,60,200,.25); }
+.ch-card:hover { transform:scale(1.02); }
 .ch-card.out-of-stock { opacity:.45; }
-.ch-card-name { font-size:clamp(10px,1.15vw,15px); font-weight:700; color:#5a2090; text-align:center; line-height:1.2; margin-bottom:2%; }
-.ch-card-img { font-size:clamp(32px,5.5vw,68px); line-height:1; flex:1; display:flex; align-items:center; justify-content:center; }
-.ch-card-price { font-size:clamp(11px,1.2vw,16px); color:#7b2ff7; font-weight:800; margin-top:4%; display:flex; align-items:center; gap:5px; }
-.ch-card-qty { position:absolute; top:6px; right:8px; font-size:clamp(9px,.9vw,12px); color:#999; font-weight:600; }
+.ch-card-name { display:none; }
+.ch-card-img  { display:none; }
+.ch-card-price {
+  position:absolute; bottom:12%; left:25%; transform:translateX(-50%);
+  font-size:clamp(10px,1.1vw,15px); color:#5a2090; font-weight:800;
+  background:rgba(255,255,255,.75); border-radius:20px;
+  padding:3px 12px; border:1.5px solid rgba(160,100,220,.35);
+  white-space:nowrap; display:flex; align-items:center; gap:4px;
+}
+.ch-card-qty {
+  position:absolute; top:35%; right:65%;
+  font-size:clamp(10px,1vw,14px); font-weight:800;
+  color:#5a2090; background:rgba(255,255,255,.75);
+  border-radius:20px; padding:2px 10px;
+  border:1.5px solid rgba(160,100,220,.35);
+}
 
 @media(max-width:500px){
   .modal{padding:20px 16px;}
   .admin-tabs{gap:5px;}
   .tab-btn{padding:6px 10px;font-size:12px;}
+}
+
+/* ── MÀN HÌNH TIN NHẮN ── */
+.tn-screen {
+  display:none; position:fixed; inset:0;
+  z-index:200; overflow:hidden; pointer-events:none;
+}
+.tn-screen.active { display:block; pointer-events:auto; }
+.tn-bg { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* Nút back */
+.tn-back {
+  position:absolute; top:3%; left:1.5%;
+  width:7%; height:12%;
+  background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:30;
+}
+
+/* Khung chat (vùng trắng trong ảnh) */
+.tn-chat-area {
+  position:absolute;
+  top:19%; left:15%; width:57%; height:55%;
+  overflow-y:auto; display:flex; flex-direction:column; gap:10px;
+  padding:12px 14px; z-index:20;
+  scrollbar-width:thin; scrollbar-color:rgba(160,100,220,.4) transparent;
+}
+.tn-chat-area::-webkit-scrollbar { width:5px; }
+.tn-chat-area::-webkit-scrollbar-thumb { background:rgba(160,100,220,.4); border-radius:10px; }
+
+/* Bubble tin nhắn admin (trái) */
+.tn-bubble-admin {
+  align-self:flex-start; max-width:78%;
+  background:linear-gradient(135deg,#ede9fe,#f3e8ff);
+  border:1.5px solid rgba(167,139,250,.6);
+  border-radius:18px 18px 18px 4px;
+  padding:10px 14px; box-shadow:0 2px 8px rgba(120,60,200,.12);
+}
+.tn-bubble-admin .tn-who { font-size:11px; font-weight:700; color:#7c3aed; margin-bottom:4px; }
+.tn-bubble-admin .tn-text { font-size:clamp(12px,1.6vw,16px); color:#3b0764; line-height:1.5; }
+.tn-bubble-admin .tn-when { font-size:10px; color:#a78bfa; margin-top:4px; text-align:right; }
+
+/* Bubble trả lời của bé (phải) */
+.tn-bubble-kid {
+  align-self:flex-end; max-width:78%;
+  background:linear-gradient(135deg,#fdf4ff,#fce7f3);
+  border:1.5px solid rgba(236,72,153,.35);
+  border-radius:18px 18px 4px 18px;
+  padding:10px 14px; box-shadow:0 2px 8px rgba(220,60,150,.1);
+}
+.tn-bubble-kid .tn-who { font-size:11px; font-weight:700; color:#be185d; margin-bottom:4px; text-align:right; }
+.tn-bubble-kid .tn-text { font-size:clamp(12px,1.6vw,16px); color:#831843; line-height:1.5; text-align:right; }
+.tn-bubble-kid .tn-when { font-size:10px; color:#f9a8d4; margin-top:4px; }
+
+/* Thanh nhập — chỉ ô text, không có nút Gửi riêng */
+.tn-input-bar {
+  position:absolute;
+  bottom:15.5%; left:17%; width:45%;
+  display:flex; align-items:center; z-index:30;
+}
+.tn-input-bar input {
+  flex:1; padding:11px 18px; border-radius:30px;
+  border:0px solid rgba(167,139,250,.4);
+  background:rgba(255,255,255,.0);
+  font-size:clamp(13px,1.5vw,16px); color:#3b0764; outline:none;
+  font-family:'Segoe UI',sans-serif;
+}
+.tn-input-bar input:focus { border-color:rgba(167,139,250,.7); }
+.tn-input-bar input::placeholder { color:#c4b5fd; }
+
+/* Hotspot vô hình đè lên nút Gửi trong ảnh nền */
+.tn-send-hotspot {
+  position:absolute;
+  bottom:8%; left:70%; width:15%; height:11%;
+  background:transparent; border:none; cursor:pointer; z-index:30;
+  border-radius:30px;
+}
+
+/* Unread badge trên hotspot */
+.tn-badge {
+  position:absolute; top:2%; right:11%;
+  width:22px; height:22px; border-radius:50%;
+  background:#ff3b5c; color:#fff; font-size:12px; font-weight:900;
+  display:flex; align-items:center; justify-content:center;
+  z-index:15; pointer-events:none; box-shadow:0 2px 6px rgba(0,0,0,.4);
+  animation: badgePop .3s ease;
+}
+@keyframes badgePop { from{transform:scale(0)} to{transform:scale(1)} }
+
+/* Admin: replies từ bé hiển thị trong panel */
+.tn-reply-card {
+  background:linear-gradient(135deg,rgba(236,72,153,.15),rgba(244,114,182,.08));
+  border:1px solid rgba(236,72,153,.35); border-radius:14px;
+  padding:10px 14px; margin-top:6px;
+}
+.tn-reply-card .reply-who { font-size:11px; font-weight:700; color:#ec4899; margin-bottom:3px; }
+.tn-reply-card .reply-text { font-size:13px; color:#fff; }
+.tn-reply-card .reply-time { font-size:10px; color:#f9a8d4; margin-top:3px; }
+.tn-unread-dot {
+  display:inline-block; width:8px; height:8px; border-radius:50%;
+  background:#ff3b5c; margin-left:6px; vertical-align:middle;
 }
 </style>
 </head>
@@ -336,7 +447,7 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
   <!-- Tin nhắn: top-right -->
   <button class="hotspot" data-label="✉️ Tin nhắn"
     style="left:89%;top:2%;width:8%;height:13%;border-radius:50%;"
-    onclick="notify('✉️ Tin nhắn')"></button>
+    onclick="openTinNhanScreen()"></button>
 
   <!-- Avatar: top-left -->
   <button class="hotspot" data-label="👤 Hồ sơ Bé Nấm"
@@ -601,6 +712,23 @@ body { width:100vw; height:100vh; overflow:hidden; background:#000; font-family:
   </div>
 </div>
 
+<!-- ── MÀN HÌNH TIN NHẮN CỦA BÉ NẤM ── -->
+<div class="tn-screen" id="tnScreen">
+  <img class="tn-bg" src="tin_nhan_bg.png" alt="Tin nhắn" draggable="false">
+  <button class="tn-back" onclick="closeTinNhanScreen()"></button>
+
+  <!-- Vùng hiển thị chat -->
+  <div class="tn-chat-area" id="tnChatArea"></div>
+
+  <!-- Thanh nhập tin -->
+  <div class="tn-input-bar">
+    <input type="text" id="tnInput" placeholder="Nhắn gì cho bố mẹ nhé... 💬"
+      maxlength="300" onkeydown="if(event.key==='Enter')sendKidReply()">
+  </div>
+  <!-- Vùng nhấn vô hình đè lên nút Gửi trong ảnh nền -->
+  <button class="tn-send-hotspot" onclick="sendKidReply()"></button>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -846,20 +974,68 @@ function sendTinNhan() {
   save('tin_nhan',items);
   document.getElementById('tn-text').value='';
   renderTinNhan();
+  updateTnBadge();
   notify('✉️ Đã gửi tin nhắn!');
 }
 function delTinNhan(id) { save('tin_nhan',load('tin_nhan').filter(x=>x.id!==id)); renderTinNhan(); }
 function renderTinNhan() {
-  const items=load('tin_nhan');
-  document.getElementById('tn-list').innerHTML=items.length?items.map(x=>`
-    <div class="msg-card">
-      <div class="msg-time">${x.emoji} ${x.date}</div>
-      <div class="msg-text">${esc(x.text)}</div>
-      <div style="text-align:right;margin-top:6px;">
-        <button class="btn-edit" onclick="openEdit('tin_nhan',${x.id})" style="font-size:14px;margin-right:6px;">✏️ Sửa</button>
-        <button class="btn-del" onclick="delTinNhan(${x.id})" style="font-size:14px;">🗑 Xóa</button>
-      </div>
-    </div>`).join(''):'<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có tin nhắn nào</div>';
+  const adminMsgs = load('tin_nhan').map(m => ({...m, _type:'admin'}));
+  const kidReplies = load('tin_nhan_reply').map(r => ({...r, _type:'kid'}));
+  const all = [...adminMsgs, ...kidReplies].sort((a,b)=>b.id-a.id);
+
+  // Mark kid replies as read by admin
+  const replies = load('tin_nhan_reply');
+  let changed = false;
+  replies.forEach(r => { if (!r.readByAdmin) { r.readByAdmin = true; changed = true; } });
+  if (changed) save('tin_nhan_reply', replies);
+
+  const unreadKid = replies.filter(r=>!r.readByAdmin).length; // already 0 now
+  document.getElementById('tn-list').innerHTML = all.length ? all.map(x => {
+    if (x._type === 'admin') {
+      return `<div class="msg-card">
+        <div class="msg-time">${x.emoji} Bạn gửi · ${x.date}</div>
+        <div class="msg-text">${esc(x.text)}</div>
+        <div style="text-align:right;margin-top:6px;">
+          <button class="btn-edit" onclick="openEdit('tin_nhan',${x.id})" style="font-size:14px;margin-right:6px;">✏️ Sửa</button>
+          <button class="btn-del" onclick="delTinNhan(${x.id})" style="font-size:14px;">🗑 Xóa</button>
+        </div>
+      </div>`;
+    } else {
+      return `<div class="tn-reply-card">
+        <div class="reply-who">🌸 Bé Nấm trả lời</div>
+        <div class="reply-text">${esc(x.text)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+          <div class="reply-time">${x.date}</div>
+          <button class="btn-del" onclick="delKidReply(${x.id})" style="font-size:13px;">🗑</button>
+        </div>
+      </div>`;
+    }
+  }).join('') : '<div style="color:#bbb;font-size:13px;text-align:center;padding:16px;">Chưa có tin nhắn nào</div>';
+
+  // Update tab label with unread count
+  updateAdminReplyBadge();
+}
+
+function delKidReply(id) {
+  save('tin_nhan_reply', load('tin_nhan_reply').filter(x=>x.id!==id));
+  renderTinNhan();
+}
+
+function updateAdminReplyBadge() {
+  const unread = load('tin_nhan_reply').filter(r=>!r.readByAdmin).length;
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(btn => {
+    if (btn.textContent.includes('Tin nhắn') || btn.getAttribute('onclick')==="switchTab('tin-nhan')") {
+      // Remove old dot
+      const oldDot = btn.querySelector('.tn-unread-dot');
+      if (oldDot) oldDot.remove();
+      if (unread > 0) {
+        const dot = document.createElement('span');
+        dot.className = 'tn-unread-dot';
+        btn.appendChild(dot);
+      }
+    }
+  });
 }
 
 // ══════════════════════════════════════════════
@@ -1026,6 +1202,9 @@ function saveEdit() {
 }
 
 function renderAll() { renderNhiemVu(); renderThuVien(); renderThuCung(); renderKhoBau(); renderCuaHang(); renderTinNhan(); }
+
+// Khởi động badge ngay khi tải trang
+(function initBadge() { updateTnBadge(); })();
 
 // ══════════════════════════════════════════════
 // MÀN HÌNH NHIỆM VỤ HÔM NAY
@@ -1202,8 +1381,6 @@ function renderChScreen() {
       onclick="${noStock?'':('askExchange('+x.id+')')}"
       style="cursor:${noStock?'default':'pointer'}">
       <div class="ch-card-qty">SL: ${x.qty}</div>
-      <div class="ch-card-name">${esc(x.name)}</div>
-      <div class="ch-card-img">${emoji[x.cat]||'🎁'}</div>
       <div class="ch-card-price">💎 ${x.price.toLocaleString('vi-VN')} điểm</div>
     </div>`;
   }).join('');
@@ -1247,6 +1424,93 @@ function confirmExchange() {
   closeConfirm();
   notify('🎉 Đổi thành công: '+x.name+'!');
   renderChScreen();
+}
+
+// ══════════════════════════════════════════════
+// MÀN HÌNH TIN NHẮN (BÉ NẤM)
+// ══════════════════════════════════════════════
+function openTinNhanScreen() {
+  // Mark all admin messages as read
+  const msgs = load('tin_nhan');
+  msgs.forEach(m => { m.readByKid = true; });
+  save('tin_nhan', msgs);
+  updateTnBadge();
+
+  renderTnChat();
+  document.getElementById('tnScreen').classList.add('active');
+  setTimeout(()=>{
+    const area = document.getElementById('tnChatArea');
+    area.scrollTop = area.scrollHeight;
+    document.getElementById('tnInput').focus();
+  }, 150);
+}
+
+function closeTinNhanScreen() {
+  document.getElementById('tnScreen').classList.remove('active');
+}
+
+function renderTnChat() {
+  const adminMsgs = load('tin_nhan').map(m => ({...m, _type:'admin'}));
+  const kidReplies = load('tin_nhan_reply').map(r => ({...r, _type:'kid'}));
+
+  // Merge & sort by id (timestamp)
+  const all = [...adminMsgs, ...kidReplies].sort((a,b)=>a.id-b.id);
+
+  const area = document.getElementById('tnChatArea');
+  if (!all.length) {
+    area.innerHTML = '<div style="text-align:center;color:#c4b5fd;font-size:14px;margin-top:30px;">Chưa có tin nhắn nào 💌<br><small>Bố/Mẹ sẽ gửi tin cho bé sớm nhé!</small></div>';
+    return;
+  }
+
+  area.innerHTML = all.map(m => {
+    if (m._type === 'admin') {
+      return `<div class="tn-bubble-admin">
+        <div class="tn-who">${m.emoji||'💌'} Bố/Mẹ gửi</div>
+        <div class="tn-text">${esc(m.text)}</div>
+        <div class="tn-when">${m.date}</div>
+      </div>`;
+    } else {
+      return `<div class="tn-bubble-kid">
+        <div class="tn-who">Bé Nấm 🌸</div>
+        <div class="tn-text">${esc(m.text)}</div>
+        <div class="tn-when">${m.date}</div>
+      </div>`;
+    }
+  }).join('');
+}
+
+function sendKidReply() {
+  const input = document.getElementById('tnInput');
+  const text = input.value.trim();
+  if (!text) { input.focus(); return; }
+
+  const replies = load('tin_nhan_reply');
+  const newReply = { id: Date.now(), text, date: fmtNow(), readByAdmin: false };
+  replies.unshift(newReply);
+  save('tin_nhan_reply', replies);
+  input.value = '';
+
+  renderTnChat();
+  setTimeout(()=>{
+    const area = document.getElementById('tnChatArea');
+    area.scrollTop = area.scrollHeight;
+  }, 50);
+  notify('💌 Đã gửi tin nhắn!');
+}
+
+function updateTnBadge() {
+  const existing = document.getElementById('tnBadge');
+  const msgs = load('tin_nhan');
+  const unread = msgs.filter(m => !m.readByKid).length;
+  if (unread > 0) {
+    if (existing) { existing.textContent = unread > 9 ? '9+' : unread; return; }
+    const badge = document.createElement('div');
+    badge.id = 'tnBadge'; badge.className = 'tn-badge';
+    badge.textContent = unread > 9 ? '9+' : unread;
+    document.querySelector('.scene').appendChild(badge);
+  } else {
+    if (existing) existing.remove();
+  }
 }
 
 // ══════════════════════════════════════════════
