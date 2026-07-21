@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Learning Hub của Bé Nấm</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -18,11 +18,11 @@ html, body {
   background:#000;
 }
 #ipad-inner {
-  /* Tỉ lệ iPad landscape: 4:3 (1366×1024) — đổi nếu ảnh bạn dùng tỉ lệ khác */
+  /* iPad Air 11-inch landscape: 2360×1640 → tỉ lệ 1.439:1, dùng 1488×1034 px thiết kế */
   position:absolute;
   top:50%; left:50%;
-  width:1366px;
-  height:1024px;
+  width:1488px;
+  height:1034px;
   overflow:hidden;
   transform-origin:center center;
   /* translate(-50%,-50%) + scale được tính bởi JS bên dưới */
@@ -233,7 +233,7 @@ html, body {
 /* Checkbox — con trực tiếp của nv-screen, KHÔNG nằm trong nv-row */
 .nv-check {
   position:absolute;
-  left:65.3%;        /* ← vị trí ngang circle (điều chỉnh) */
+  left:67.0%;        /* ← vị trí ngang circle (điều chỉnh) */
   width:4.0vw; height:4.0vw; max-width:52px; max-height:52px;
   border-radius:50%;
   border:3px solid rgba(180,140,220,.7); background:rgba(255,255,255,.55);
@@ -316,13 +316,13 @@ html, body {
   background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:30;
 }
 .cq-question {
-  position:absolute; top:38%; left:50%; transform:translateX(-50%);
+  position:absolute; top:38%; left:55%; transform:translateX(-50%);
   font-size:clamp(20px,3vw,42px); font-weight:900; color:#4a1580;
   font-family:'Segoe UI',sans-serif; z-index:30; text-align:center;
   pointer-events:none; white-space:nowrap;
 }
 .cq-progress {
-  position:absolute; top:32%; left:53%; transform:translateX(-50%);
+  position:absolute; top:35%; left:58%; transform:translateX(-50%);
   display:flex; gap:6px; z-index:30; pointer-events:none;
 }
 .cq-star { font-size:clamp(14px,2vw,26px); filter:grayscale(1) brightness(1.5); transition:filter .3s; }
@@ -648,8 +648,12 @@ html, body {
   <button class="tc-back" onclick="closeThuCungScreen()"></button>
   <!-- Nút Cho ăn (vị trí trên ảnh thu_cung_bg) -->
   <button class="hotspot" data-label="🍖 Cho ăn"
-    style="position:absolute;left:2%;top:34%;width:20%;height:9%;border-radius:30px;"
+    style="position:absolute;left:5%;top:34%;width:20%;height:20%;border-radius:30px;"
     onclick="openChoAn()"></button>
+  <!-- Nút Tắm rửa (ẩn, đè lên vùng nút tắm rửa trong ảnh thu_cung_bg) -->
+  <button class="hotspot" data-label="🛁 Tắm rửa"
+    style="position:absolute;left:5%;top:65%;width:20%;height:20%;border-radius:30px;"
+    onclick="openTamRua()"></button>
 </div>
 
 <!-- ── CHO ĂN SCREEN ── -->
@@ -659,8 +663,8 @@ html, body {
   <div class="ca-speech" id="caSpeech">Meow~ 🐾</div>
   <!-- Nút ẩn đè lên 3 hình vẽ trong ảnh cho_an_bg — chỉnh left/top/width/height theo ảnh thực tế -->
   <button class="ca-food-hot" data-label="🐟 Cá"      style="left:25%;top:85%;width:12%;height:12%;" onclick="feedPet('Cá')"></button>
-  <button class="ca-food-hot" data-label="🍖 Thức ăn" style="left:35%;top:85%;width:12%;height:12%;" onclick="feedPet('Thức ăn')"></button>
-  <button class="ca-food-hot" data-label="🎂 Bánh"    style="left:50%;top:85%;width:12%;height:12%;" onclick="feedPet('Bánh')"></button>
+  <button class="ca-food-hot" data-label="🍖 Thức ăn" style="left:35%;top:85%;width:15%;height:12%;" onclick="feedPet('Thức ăn')"></button>
+  <button class="ca-food-hot" data-label="🎂 Bánh"    style="left:50%;top:85%;width:15%;height:12%;" onclick="feedPet('Bánh')"></button>
 </div>
 
 <!-- ── QUIZ CHO ĂN ── -->
@@ -676,15 +680,15 @@ html, body {
   </div>
   <div class="cq-question" id="cqQuestion"></div>
   <!-- 4 vùng bấm ẩn đè lên ô A B C D trong ảnh -->
-  <button class="cq-opt-hot" id="cqHot0" style="left:28%;top:45%;width:22%;height:16%;" onclick="selectOpt(0)"></button>
-  <button class="cq-opt-hot" id="cqHot1" style="left:52%;top:45%;width:22%;height:16%;" onclick="selectOpt(1)"></button>
-  <button class="cq-opt-hot" id="cqHot2" style="left:28%;top:60%;width:22%;height:16%;" onclick="selectOpt(2)"></button>
-  <button class="cq-opt-hot" id="cqHot3" style="left:52%;top:60%;width:22%;height:16%;" onclick="selectOpt(3)"></button>
+  <button class="cq-opt-hot" id="cqHot0" style="left:28%;top:55%;width:22%;height:16%;" onclick="selectOpt(0)"></button>
+  <button class="cq-opt-hot" id="cqHot1" style="left:52%;top:55%;width:22%;height:16%;" onclick="selectOpt(1)"></button>
+  <button class="cq-opt-hot" id="cqHot2" style="left:28%;top:65%;width:22%;height:16%;" onclick="selectOpt(2)"></button>
+  <button class="cq-opt-hot" id="cqHot3" style="left:52%;top:65%;width:22%;height:16%;" onclick="selectOpt(3)"></button>
   <!-- Text đáp án -->
-  <div class="cq-opt-val" id="cqVal0" style="left:42%;top:55%;"></div>
-  <div class="cq-opt-val" id="cqVal1" style="left:64%;top:55%;"></div>
-  <div class="cq-opt-val" id="cqVal2" style="left:42%;top:70%;"></div>
-  <div class="cq-opt-val" id="cqVal3" style="left:64%;top:70%;"></div>
+  <div class="cq-opt-val" id="cqVal0" style="left:47%;top:50%;"></div>
+  <div class="cq-opt-val" id="cqVal1" style="left:68%;top:50%;"></div>
+  <div class="cq-opt-val" id="cqVal2" style="left:47%;top:65%;"></div>
+  <div class="cq-opt-val" id="cqVal3" style="left:68%;top:65%;"></div>
   <!-- Nút Kiểm tra ẩn -->
   <button class="cq-check-hot" id="cqCheckBtn" style="left:35%;top:80%;width:30%;height:9%;" onclick="checkAnswer()" disabled></button>
   <div class="cq-feedback" id="cqFeedback"></div>
@@ -694,6 +698,45 @@ html, body {
 <div class="cr-screen" id="crScreen">
   <img class="cr-bg" id="crBg" src="" alt="Chúc mừng" draggable="false">
   <button class="cr-back" onclick="closeCrScreen()"></button>
+</div>
+
+<!-- ── TẮM RỬA SCREEN ── -->
+<div class="ca-screen" id="tamScreen">
+  <img class="ca-bg" src="tam_bg.png" alt="Tắm rửa" draggable="false">
+  <button class="ca-back" onclick="closeTamRua()"></button>
+</div>
+
+<!-- ── QUIZ TẮM RỬA ── -->
+<div class="cq-screen" id="tqScreen">
+  <img class="cq-bg" src="tam_bg.png" alt="Quiz tắm rửa" draggable="false">
+  <button class="cq-back" onclick="closeTqScreen()"></button>
+  <div class="cq-progress" id="tqProgress">
+    <span class="cq-star" id="tqStar0">⭐</span>
+    <span class="cq-star" id="tqStar1">⭐</span>
+    <span class="cq-star" id="tqStar2">⭐</span>
+    <span class="cq-star" id="tqStar3">⭐</span>
+    <span class="cq-star" id="tqStar4">⭐</span>
+  </div>
+  <div class="cq-question" id="tqQuestion"></div>
+  <!-- 4 vùng bấm ẩn đè lên ô A B C D -->
+  <button class="cq-opt-hot" id="tqHot0" style="left:28%;top:55%;width:22%;height:16%;" onclick="selectTqOpt(0)"></button>
+  <button class="cq-opt-hot" id="tqHot1" style="left:52%;top:55%;width:22%;height:16%;" onclick="selectTqOpt(1)"></button>
+  <button class="cq-opt-hot" id="tqHot2" style="left:28%;top:65%;width:22%;height:16%;" onclick="selectTqOpt(2)"></button>
+  <button class="cq-opt-hot" id="tqHot3" style="left:52%;top:65%;width:22%;height:16%;" onclick="selectTqOpt(3)"></button>
+  <!-- Text đáp án -->
+  <div class="cq-opt-val" id="tqVal0" style="left:47%;top:50%;"></div>
+  <div class="cq-opt-val" id="tqVal1" style="left:68%;top:50%;"></div>
+  <div class="cq-opt-val" id="tqVal2" style="left:47%;top:65%;"></div>
+  <div class="cq-opt-val" id="tqVal3" style="left:68%;top:65%;"></div>
+  <!-- Nút Kiểm tra ẩn -->
+  <button class="cq-check-hot" id="tqCheckBtn" style="left:35%;top:80%;width:30%;height:9%;" onclick="checkTqAnswer()" disabled></button>
+  <div class="cq-feedback" id="tqFeedback"></div>
+</div>
+
+<!-- ── CHÚC MỪNG TẮM RỬA ── -->
+<div class="cr-screen" id="trScreen">
+  <img class="cr-bg" src="tam_2_bg.png" alt="Chúc mừng tắm rửa" draggable="false">
+  <button class="cr-back" onclick="closeTrScreen()"></button>
 </div>
 
 <!-- ── MẬT KHẨU ── -->
@@ -1858,6 +1901,128 @@ function updateTnBadge() {
 }
 
 // ══════════════════════════════════════════════
+// TẮM RỬA
+// ══════════════════════════════════════════════
+let tqStreak = 0, tqAnswer = 0, tqSelected = -1, tqLocked = false;
+let _tqFbTimer = null;
+
+function openTamRua() {
+  document.getElementById('tamScreen').classList.add('active');
+  // Chuyển ngay sang quiz tắm rửa
+  setTimeout(() => {
+    document.getElementById('tamScreen').classList.remove('active');
+    tqStreak = 0;
+    document.getElementById('tqScreen').classList.add('active');
+    tqNextQuestion();
+  }, 600);
+}
+
+function closeTamRua() {
+  document.getElementById('tamScreen').classList.remove('active');
+  document.getElementById('tcScreen').classList.add('active');
+}
+
+function closeTqScreen() {
+  document.getElementById('tqScreen').classList.remove('active');
+  document.getElementById('tcScreen').classList.add('active');
+  tqStreak = 0;
+  hideTqFeedback();
+}
+
+function closeTrScreen() {
+  document.getElementById('trScreen').classList.remove('active');
+  document.getElementById('tcScreen').classList.add('active');
+}
+
+function tqNextQuestion() {
+  tqSelected = -1; tqLocked = false;
+  [0,1,2,3].forEach(i => {
+    const h = document.getElementById('tqHot'+i);
+    h.classList.remove('selected','correct','wrong');
+    h.disabled = false;
+  });
+  document.getElementById('tqCheckBtn').disabled = true;
+  hideTqFeedback();
+  updateTqStars();
+
+  // Phép trừ số có 3 chữ số: a - b = ? (a >= 100, b >= 100, kết quả > 0)
+  const b = randInt(100, 800);
+  const diff = randInt(1, b - 1);  // đảm bảo kết quả dương
+  const a = b + diff; // a luôn > b, cả hai đều trong phạm vi 3 chữ số
+  // Đảm bảo a không vượt 999
+  const aFinal = Math.min(a, 999);
+  const bFinal = aFinal - diff;
+  tqAnswer = diff;
+  const q = aFinal + ' - ' + bFinal + ' = ?';
+  const opts = makeOpts(tqAnswer, 15, aFinal - 1);
+
+  document.getElementById('tqQuestion').textContent = q;
+  const shuffled = shuffle([...opts]);
+  shuffled.forEach((v,i) => document.getElementById('tqVal'+i).textContent = v);
+}
+
+function selectTqOpt(idx) {
+  if (tqLocked) return;
+  tqSelected = idx;
+  [0,1,2,3].forEach(i =>
+    document.getElementById('tqHot'+i).classList.toggle('selected', i===idx)
+  );
+  document.getElementById('tqCheckBtn').disabled = false;
+}
+
+function checkTqAnswer() {
+  if (tqSelected < 0 || tqLocked) return;
+  tqLocked = true;
+  const chosen = parseInt(document.getElementById('tqVal'+tqSelected).textContent);
+  const correct = chosen === tqAnswer;
+
+  [0,1,2,3].forEach(i => {
+    const v = parseInt(document.getElementById('tqVal'+i).textContent);
+    const h = document.getElementById('tqHot'+i);
+    h.disabled = true;
+    h.classList.remove('selected');
+    if (v === tqAnswer)               h.classList.add('correct');
+    if (i === tqSelected && !correct) h.classList.add('wrong');
+  });
+
+  if (correct) {
+    tqStreak++;
+    updateTqStars();
+    if (tqStreak >= 5) {
+      showTqFeedback('🎉 Xuất sắc! MiMi đã sạch sẽ rồi! ✨');
+      setTimeout(() => {
+        hideTqFeedback();
+        document.getElementById('tqScreen').classList.remove('active');
+        document.getElementById('trScreen').classList.add('active');
+        tqStreak = 0;
+      }, 1800);
+    } else {
+      showTqFeedback('✅ Đúng rồi! Làm tiếp nhé ~');
+      setTimeout(() => { hideTqFeedback(); tqNextQuestion(); }, 1400);
+    }
+  } else {
+    tqStreak = 0;
+    updateTqStars();
+    showTqFeedback('❌ Sai rồi! Bắt đầu lại từ đầu nhé~');
+    setTimeout(() => { hideTqFeedback(); tqNextQuestion(); }, 1800);
+  }
+}
+
+function updateTqStars() {
+  for (let i=0;i<5;i++)
+    document.getElementById('tqStar'+i).classList.toggle('lit', i<tqStreak);
+}
+function showTqFeedback(msg) {
+  clearTimeout(_tqFbTimer);
+  const el = document.getElementById('tqFeedback');
+  el.textContent = msg; el.classList.add('show');
+}
+function hideTqFeedback() {
+  clearTimeout(_tqFbTimer);
+  document.getElementById('tqFeedback').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════
 // CLOSE ON BACKDROP
 // ══════════════════════════════════════════════
 document.getElementById('pwOverlay').addEventListener('click',      e=>{ if(e.target===e.currentTarget) closePw(); });
@@ -1870,15 +2035,16 @@ document.getElementById('editOverlay').addEventListener('click',    e=>{ if(e.ta
 // ══════════════════════════════════════════════
 (function() {
   const inner = document.getElementById('ipad-inner');
-  const IPAD_W = 1366; // chiều rộng thiết kế (px)
-  const IPAD_H = 1024; // chiều cao thiết kế (px)
+  // iPad Air 11-inch landscape thiết kế (px)
+  const IPAD_W = 1488;
+  const IPAD_H = 1034;
 
   function rescale() {
     const sw = window.innerWidth;
     const sh = window.innerHeight;
-    // Tính scale để vừa khít màn hình, giữ đúng tỉ lệ
+    // contain: thu/phóng vừa khít màn hình, giữ đúng tỉ lệ, không cắt xén
+    // → laptop/iPhone/tablet đều thấy toàn bộ canvas như iPad Air
     const scale = Math.min(sw / IPAD_W, sh / IPAD_H);
-    // translate(-50%,-50%) căn giữa từ top:50% left:50%, rồi scale từ tâm
     inner.style.transform = `translate(-50%, -50%) scale(${scale})`;
   }
 
