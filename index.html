@@ -428,6 +428,25 @@ html, body {
   .tab-btn{padding:6px 10px;font-size:12px;}
 }
 
+/* ── MÀN HÌNH THƯ VIỆN ── */
+.tv-screen {
+  display:none; position:fixed; inset:0;
+  z-index:100; background:#000;
+  overflow:hidden; pointer-events:none;
+}
+.tv-screen.active { display:block; pointer-events:auto; }
+.tv-bg { width:100%; height:100%; object-fit:cover; display:block; }
+.tv-back {
+  position:absolute; top:3%; left:1.5%; width:7%; height:12%;
+  background:transparent; border:none; cursor:pointer; border-radius:50%; z-index:20;
+}
+.tv-btn {
+  position:absolute; background:transparent; border:none;
+  cursor:pointer; z-index:20; border-radius:30px;
+}
+.tv-btn:hover  { background:rgba(255,255,255,.12); }
+.tv-btn:active { background:rgba(255,255,255,.22); transform:scale(.97); }
+
 /* ── MÀN HÌNH TIN NHẮN ── */
 .tn-screen {
   display:none; position:fixed; inset:0;
@@ -549,7 +568,7 @@ html, body {
   <!-- Thư viện: left:59.8% top:40.9% -->
   <button class="hotspot" data-label="📚 Thư viện"
     style="left:70%;top:38%;width:17%;height:9%;"
-    onclick="notify('📚 Thư viện')"></button>
+    onclick="openThuVien()"></button>
 
   <!-- Thú cưng: left:11.1% top:68% -->
   <button class="hotspot" data-label="🐾 Thú cưng"
@@ -589,7 +608,7 @@ html, body {
 
   <!-- Sidebar ẩn (đè lên các nút trong ảnh) -->
   <button class="nv-side-btn" style="top:20%;" onclick="closeNhiemVu()"></button>
-  <button class="nv-side-btn" style="top:40%;" onclick="closeNhiemVu();setTimeout(()=>notify('📚 Thư viện'),150)"></button>
+  <button class="nv-side-btn" style="top:40%;" onclick="closeNhiemVu();setTimeout(()=>openThuVien(),150)"></button>
   <button class="nv-side-btn" style="top:50%;" onclick="closeNhiemVu();setTimeout(()=>notify('🐾 Thú cưng'),150)"></button>
   <button class="nv-side-btn" style="top:60%;" onclick="closeNhiemVu();setTimeout(()=>notify('💎 Kho báu'),150)"></button>
   <button class="nv-side-btn" style="top:70%;" onclick="closeNhiemVu();setTimeout(()=>openCuaHang(),150)"></button>
@@ -737,6 +756,80 @@ html, body {
 <div class="cr-screen" id="trScreen">
   <img class="cr-bg" src="tam_2_bg.png" alt="Chúc mừng tắm rửa" draggable="false">
   <button class="cr-back" onclick="closeTrScreen()"></button>
+</div>
+
+<!-- ── THƯ VIỆN SCREEN ── -->
+<div class="tv-screen" id="tvScreen">
+  <img class="tv-bg" src="thu_vien_bg.png" alt="Thư viện" draggable="false">
+  <button class="tv-back" onclick="closeThuVien()"></button>
+  <!-- 6 nút ẩn đè lên 6 mũi tên "Tiếp tục" trong ảnh thu_vien_bg -->
+  <!-- Toán học -->
+  <button class="tv-btn" style="left:65%;top:25%;width:18%;height:8%;"
+    onclick="openToanHoc()"></button>
+  <!-- Tiếng Việt -->
+  <button class="tv-btn" style="left:65%;top:38%;width:18%;height:8%;"
+    onclick="notify('📝 Tiếng Việt')"></button>
+  <!-- Tiếng Anh -->
+  <button class="tv-btn" style="left:65%;top:51%;width:18%;height:8%;"
+    onclick="notify('🌍 Tiếng Anh')"></button>
+  <!-- Khám phá thế giới -->
+  <button class="tv-btn" style="left:65%;top:64%;width:18%;height:8%;"
+    onclick="notify('🌏 Khám phá thế giới')"></button>
+  <!-- Khoa học -->
+  <button class="tv-btn" style="left:65%;top:75%;width:18%;height:8%;"
+    onclick="notify('🔬 Khoa học')"></button>
+  <!-- Mỹ thuật -->
+  <button class="tv-btn" style="left:65%;top:87%;width:18%;height:8%;"
+    onclick="notify('🎨 Mỹ thuật')"></button>
+</div>
+
+<!-- ── TOÁN HỌC SCREEN ── -->
+<div class="tv-screen" id="toanScreen">
+  <img class="tv-bg" src="toan_bg.png" alt="Thư viện Toán học" draggable="false">
+  <button class="tv-back" onclick="closeToanHoc()"></button>
+  <!-- Nút home góc trên phải -->
+  <button class="tv-btn" style="left:92%;top:2%;width:7%;height:12%;border-radius:50%;"
+    onclick="closeToanHoc();closeThuVien()"></button>
+  <!-- 7 nút ẩn đè lên 7 mũi tên ">" trong ảnh toan_bg -->
+  <!-- Hình vuông -->
+  <button class="tv-btn" style="left:72%;top:20%;width:10%;height:8%;"
+    onclick="openShapeScreen('hinhVuongScreen')"></button>
+  <!-- Hình tam giác -->
+  <button class="tv-btn" style="left:72%;top:32%;width:10%;height:8%;"
+    onclick="openShapeScreen('tamGiacScreen')"></button>
+  <!-- Hình chữ nhật -->
+  <button class="tv-btn" style="left:72%;top:44%;width:10%;height:8%;"
+    onclick="openShapeScreen('chuNhatScreen')"></button>
+  <!-- Hình tứ giác -->
+  <button class="tv-btn" style="left:72%;top:56%;width:10%;height:8%;"
+    onclick="notify('◆ Hình tứ giác')"></button>
+  <!-- Độ dài -->
+  <button class="tv-btn" style="left:72%;top:68%;width:10%;height:8%;"
+    onclick="notify('📏 Độ dài')"></button>
+  <!-- Khối lượng -->
+  <button class="tv-btn" style="left:72%;top:78%;width:10%;height:8%;"
+    onclick="notify('⚖️ Khối lượng')"></button>
+  <!-- Số la mã -->
+  <button class="tv-btn" style="left:72%;top:85%;width:10%;height:8%;"
+    onclick="notify('🔢 Số la mã')"></button>
+</div>
+
+<!-- ── HÌNH VUÔNG SCREEN ── -->
+<div class="tv-screen" id="hinhVuongScreen">
+  <img class="tv-bg" src="hinh_vuong_bg.png" alt="Hình vuông" draggable="false">
+  <button class="tv-back" onclick="closeShapeScreen('hinhVuongScreen')"></button>
+</div>
+
+<!-- ── HÌNH TAM GIÁC SCREEN ── -->
+<div class="tv-screen" id="tamGiacScreen">
+  <img class="tv-bg" src="tam_giac_bg.png" alt="Hình tam giác" draggable="false">
+  <button class="tv-back" onclick="closeShapeScreen('tamGiacScreen')"></button>
+</div>
+
+<!-- ── HÌNH CHỮ NHẬT SCREEN ── -->
+<div class="tv-screen" id="chuNhatScreen">
+  <img class="tv-bg" src="chu_nhat_bg.png" alt="Hình chữ nhật" draggable="false">
+  <button class="tv-back" onclick="closeShapeScreen('chuNhatScreen')"></button>
 </div>
 
 <!-- ── MẬT KHẨU ── -->
@@ -1589,6 +1682,28 @@ function saveEdit() {
 }
 
 function renderAll() { renderNhiemVu(); renderThuVien(); renderThuCung(); renderKhoBau(); renderCuaHang(); renderTinNhan(); }
+
+// ══════════════════════════════════════════════
+// MÀN HÌNH THƯ VIỆN
+// ══════════════════════════════════════════════
+function openThuVien() {
+  document.getElementById('tvScreen').classList.add('active');
+}
+function closeThuVien() {
+  document.getElementById('tvScreen').classList.remove('active');
+}
+function openToanHoc() {
+  document.getElementById('toanScreen').classList.add('active');
+}
+function closeToanHoc() {
+  document.getElementById('toanScreen').classList.remove('active');
+}
+function openShapeScreen(id) {
+  document.getElementById(id).classList.add('active');
+}
+function closeShapeScreen(id) {
+  document.getElementById(id).classList.remove('active');
+}
 
 // Khởi động badge ngay khi tải trang
 (function initBadge() { updateTnBadge(); })();
