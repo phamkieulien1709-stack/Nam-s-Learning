@@ -802,16 +802,16 @@ html, body {
     onclick="openShapeScreen('chuNhatScreen')"></button>
   <!-- Hình tứ giác -->
   <button class="tv-btn" style="left:72%;top:56%;width:10%;height:8%;"
-    onclick="notify('◆ Hình tứ giác')"></button>
+    onclick="openShapeScreen('tuGiacScreen')"></button>
   <!-- Độ dài -->
   <button class="tv-btn" style="left:72%;top:68%;width:10%;height:8%;"
-    onclick="notify('📏 Độ dài')"></button>
+    onclick="openShapeScreen('doDaiScreen')"></button>
   <!-- Khối lượng -->
   <button class="tv-btn" style="left:72%;top:78%;width:10%;height:8%;"
-    onclick="notify('⚖️ Khối lượng')"></button>
+    onclick="openShapeScreen('khoiLuongScreen')"></button>
   <!-- Số la mã -->
   <button class="tv-btn" style="left:72%;top:85%;width:10%;height:8%;"
-    onclick="notify('🔢 Số la mã')"></button>
+    onclick="openShapeScreen('laMaScreen')"></button>
 </div>
 
 <!-- ── HÌNH VUÔNG SCREEN ── -->
@@ -830,6 +830,30 @@ html, body {
 <div class="tv-screen" id="chuNhatScreen">
   <img class="tv-bg" src="chu_nhat_bg.png" alt="Hình chữ nhật" draggable="false">
   <button class="tv-back" onclick="closeShapeScreen('chuNhatScreen')"></button>
+</div>
+
+<!-- ── HÌNH TỨ GIÁC SCREEN ── -->
+<div class="tv-screen" id="tuGiacScreen">
+  <img class="tv-bg" src="tu_giac_bg.png" alt="Hình tứ giác" draggable="false">
+  <button class="tv-back" onclick="closeShapeScreen('tuGiacScreen')"></button>
+</div>
+
+<!-- ── ĐỘ DÀI SCREEN ── -->
+<div class="tv-screen" id="doDaiScreen">
+  <img class="tv-bg" src="do_dai_bg.png" alt="Độ dài" draggable="false">
+  <button class="tv-back" onclick="closeShapeScreen('doDaiScreen')"></button>
+</div>
+
+<!-- ── KHỐI LƯỢNG SCREEN ── -->
+<div class="tv-screen" id="khoiLuongScreen">
+  <img class="tv-bg" src="khoi_luong_bg.png" alt="Khối lượng" draggable="false">
+  <button class="tv-back" onclick="closeShapeScreen('khoiLuongScreen')"></button>
+</div>
+
+<!-- ── SỐ LA MÃ SCREEN ── -->
+<div class="tv-screen" id="laMaScreen">
+  <img class="tv-bg" src="la_ma_bg.png" alt="Số la mã" draggable="false">
+  <button class="tv-back" onclick="closeShapeScreen('laMaScreen')"></button>
 </div>
 
 <!-- ── MẬT KHẨU ── -->
